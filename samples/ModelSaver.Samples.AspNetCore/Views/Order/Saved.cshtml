@@ -1,0 +1,33 @@
+@model OrderEditModel
+@{
+    ViewData["Title"] = "Order Saved";
+}
+
+<h1>Posted-back model</h1>
+
+<p>This is exactly what the <code>Save</code> action received - notice
+   everything round-tripped except <code>DisplayOnlySummary</code>, which
+   was never sent because it's excluded with
+   <code>[PersistOnPostback(false)]</code>.</p>
+
+<dl>
+    <dt>Id</dt>
+    <dd>@Model.Id</dd>
+
+    <dt>CustomerId</dt>
+    <dd>@Model.CustomerId</dd>
+
+    <dt>CreatedAtUtc</dt>
+    <dd>@Model.CreatedAtUtc</dd>
+
+    <dt>Total</dt>
+    <dd>@Model.Total</dd>
+
+    <dt>CustomerName</dt>
+    <dd>@Model.CustomerName</dd>
+
+    <dt>DisplayOnlySummary (expected to be empty)</dt>
+    <dd>"@Model.DisplayOnlySummary"</dd>
+</dl>
+
+<a asp-action="Edit">Back to Edit</a>

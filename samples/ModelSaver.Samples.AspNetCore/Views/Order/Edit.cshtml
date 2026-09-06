@@ -1,0 +1,27 @@
+@model OrderEditModel
+@{
+    ViewData["Title"] = "Edit Order";
+}
+
+<h1>Edit Order (ASP.NET Core)</h1>
+
+<p>
+    Only <strong>Customer name</strong> is shown as an editable field below.
+    <code>Id</code>, <code>CustomerId</code>, <code>CreatedAtUtc</code> and
+    <code>Total</code> are not on the form at all - the
+    <code>asp-persist-model</code> Tag Helper adds them as hidden fields
+    automatically because <code>OrderEditModel</code> is marked
+    <code>[PersistOnPostback]</code>.
+</p>
+
+<dl>
+    <dt>DisplayOnlySummary (marked <code>[PersistOnPostback(false)]</code>)</dt>
+    <dd>@Model.DisplayOnlySummary</dd>
+</dl>
+
+<form asp-action="Save" asp-persist-model="Model">
+    <label asp-for="CustomerName">Customer name</label>
+    <input asp-for="CustomerName" type="text" />
+
+    <button type="submit">Save</button>
+</form>

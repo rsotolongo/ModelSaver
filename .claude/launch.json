@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ModelSaver.Samples.AspNetCore",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "samples/ModelSaver.Samples.AspNetCore"],
+      "port": 5247
+    }
+  ]
+}

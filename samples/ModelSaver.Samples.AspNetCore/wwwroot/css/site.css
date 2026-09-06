@@ -1,0 +1,36 @@
+body {
+    font-family: sans-serif;
+    max-width: 40rem;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+label {
+    display: block;
+    margin-top: 1rem;
+}
+
+input[type="text"], input[type="number"] {
+    display: block;
+    width: 100%;
+    padding: 0.4rem;
+    box-sizing: border-box;
+}
+
+button {
+    margin-top: 1.5rem;
+    padding: 0.5rem 1rem;
+}
+
+dl {
+    border: 1px solid #ccc;
+    padding: 1rem;
+}
+
+dt {
+    font-weight: bold;
+}
+
+dd {
+    margin: 0 0 0.5rem 0;
+}
