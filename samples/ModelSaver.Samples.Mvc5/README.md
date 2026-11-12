@@ -25,23 +25,22 @@ can see the hidden fields round-tripped correctly, while
 ## Running it
 
 This project targets classic ASP.NET MVC 5 (`System.Web.Mvc`), which is
-hosted by IIS / IIS Express or Mono — there is no cross-platform
-`dotnet run` for it. **On the Linux machine this repo was authored on,
-this project was build-verified only** (`dotnet build`, confirming the
-C# code compiles against `Microsoft.AspNet.Mvc` 5.2.9 and `ModelSaver.Mvc5`)
-— it was never launched or clicked through, unlike
-`ModelSaver.Samples.AspNetCore`, which was run end-to-end in a browser.
-Classic Razor views (`.cshtml`) are compiled by ASP.NET at request time,
-not by `dotnet build`, so the view syntax itself could not be verified
-here either — it was written and reviewed carefully against the real
-`System.Web.Mvc` / `ModelSaver.Mvc5` APIs, but treat it as unexecuted
-until you've run it yourself.
+hosted by IIS / IIS Express — there is no cross-platform `dotnet run`
+for it. It is an SDK-style class library, so Visual Studio can't launch it
+as a web project on its own; `Properties/launchSettings.json` instead
+starts IIS Express against the project folder, and the build writes its
+DLLs straight to `bin\` (where IIS Express expects them).
 
-To actually run it:
+To run it (Windows, IIS Express installed):
 
-1. Open `ModelSaver.sln` in Visual Studio on Windows.
-2. Set `ModelSaver.Samples.Mvc5` as the startup project.
-3. Press F5 (IIS Express). If Visual Studio doesn't offer IIS Express
-   automatically for this SDK-style project, run
-   `dotnet publish samples/ModelSaver.Samples.Mvc5 -o publish` and point
-   IIS or IIS Express at the `publish` folder instead.
+1. Open `ModelSaver.sln` in Visual Studio.
+2. Set `ModelSaver.Samples.Mvc5` as the startup project and pick the
+   **IIS Express** profile.
+3. Press F5. It opens `http://localhost:8081/Order/Edit`.
+
+From a shell instead:
+
+```bash
+dotnet build samples/ModelSaver.Samples.Mvc5
+"C:\Program Files\IIS Express\iisexpress.exe" /path:%CD%\samples\ModelSaver.Samples.Mvc5 /port:8081
+```
