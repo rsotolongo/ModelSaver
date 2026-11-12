@@ -1,7 +1,6 @@
-using System;
-using System.IO;
 using System.Web.Mvc;
 using System.Web.Mvc.Html;
+using System.Web.WebPages;
 using ModelSaver.Mvc5.Internal;
 
 namespace ModelSaver.Mvc5;
@@ -31,8 +30,11 @@ public static class PersistedFormExtensions
         var buffer = new StringWriter();
         viewContext.Writer = buffer;
 
+        var outputStack = (htmlHelper.ViewDataContainer as WebPageBase)?.OutputStack;
+        outputStack?.Push(buffer);
+
         var innerForm = htmlHelper.BeginForm(actionName, controllerName, method, htmlAttributes);
 
-        return new PersistedFormScope(viewContext, originalWriter, buffer, innerForm, model);
+        return new PersistedFormScope(viewContext, originalWriter, buffer, innerForm, model, outputStack);
     }
 }
