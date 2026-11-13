@@ -1,7 +1,7 @@
 using System;
 using ModelSaver;
 
-namespace ModelSaver.Samples.Mvc5.Models;
+namespace ModelSaver.Mvc5.Sample.Models;
 
 [PersistOnPostback]
 public class OrderEditModel
