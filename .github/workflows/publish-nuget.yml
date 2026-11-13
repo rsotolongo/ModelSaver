@@ -109,6 +109,7 @@ jobs:
 
       - name: Bump <Version> in each csproj to the released version
         if: success()
+        shell: bash
         env:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
           DEPLOY_KEY: ${{ secrets.RELEASE_DEPLOY_KEY }}
@@ -119,40 +120,39 @@ jobs:
         # main is protected by a ruleset requiring a pull request, bypassed only for the
         # admin role and the repo's write-access Deploy Key - not for a PAT, fine-grained or
         # classic (confirmed empirically). Push over SSH with that deploy key instead.
+        #
+        # Forced to bash (the job otherwise defaults to pwsh, since it runs on windows-latest):
+        # writing the multi-line private key to a file via PowerShell's Set-Content, even with
+        # -Encoding ascii and CRLF normalized to LF first, produced a file ssh rejected as
+        # "invalid format" - bash's equivalent (plain redirection) does not have that problem.
         run: |
           git fetch origin main
           git checkout -B main origin/main
 
-          $files = @(
-            'src/ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj',
-            'src/ProQualEx.ModelSaver.AspNetCore/ProQualEx.ModelSaver.AspNetCore.csproj',
+          files=(
+            'src/ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj'
+            'src/ProQualEx.ModelSaver.AspNetCore/ProQualEx.ModelSaver.AspNetCore.csproj'
             'src/ProQualEx.ModelSaver.Mvc5/ProQualEx.ModelSaver.Mvc5.csproj'
           )
 
-          foreach ($file in $files) {
-            (Get-Content $file -Raw) -replace '<Version>[^<]*</Version>', "<Version>$env:PACKAGE_VERSION</Version>" |
-              Set-Content $file -NoNewline
-          }
+          for file in "${files[@]}"; do
+            sed -i -E "s|<Version>[^<]*</Version>|<Version>${PACKAGE_VERSION}</Version>|" "$file"
+          done
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add $files
+          git add "${files[@]}"
 
-          git diff --cached --quiet
-          if ($LASTEXITCODE -eq 0) {
-            Write-Host "Version already $env:PACKAGE_VERSION in every csproj; nothing to commit."
-          }
-          else {
-            git commit -m "Bump package Version to $env:PACKAGE_VERSION [skip ci]"
+          if git diff --cached --quiet; then
+            echo "Version already $PACKAGE_VERSION in every csproj; nothing to commit."
+          else
+            git commit -m "Bump package Version to $PACKAGE_VERSION [skip ci]"
 
-            $keyPath = Join-Path $env:RUNNER_TEMP 'release_deploy_key'
-            ($env:DEPLOY_KEY -replace "`r`n", "`n") | Set-Content -Path $keyPath -NoNewline -Encoding ascii
-            icacls $keyPath /inheritance:r | Out-Null
-            icacls $keyPath /grant:r "$($env:USERNAME):(R)" | Out-Null
+            mkdir -p ~/.ssh
+            echo "$DEPLOY_KEY" > ~/.ssh/release_deploy_key
+            chmod 600 ~/.ssh/release_deploy_key
+            ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
 
-            $knownHostsPath = Join-Path $env:RUNNER_TEMP 'known_hosts'
-            ssh-keyscan -t ed25519 github.com 2>$null | Set-Content -Path $knownHostsPath
-
-            $env:GIT_SSH_COMMAND = "ssh -i `"$keyPath`" -o UserKnownHostsFile=`"$knownHostsPath`""
-            git push git@github.com:rsotolongo/ModelSaver.git HEAD:main
-          }
+            GIT_SSH_COMMAND="ssh -i ~/.ssh/release_deploy_key -o UserKnownHostsFile=~/.ssh/known_hosts" \
+              git push git@github.com:rsotolongo/ModelSaver.git HEAD:main
+          fi
