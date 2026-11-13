@@ -150,6 +150,14 @@ This needs a matching Trusted Publishing policy configured on nuget.org
 `ProQualEx.ModelSaver.*`) and a `NUGET_USER` repository secret holding the
 nuget.org profile name — no `NUGET_API_KEY` secret exists or is needed.
 
+After a successful push, the job re-syncs to `origin/main` (not whatever
+detached commit the tag checked out) and commits the released version into
+all three `<Version>` tags with `git push origin main`, using the default
+`GITHUB_TOKEN` (`permissions: contents: write`). That commit's message ends
+in `[skip ci]` and won't retrigger this workflow itself (it only triggers on
+tags/`workflow_dispatch`), but it is a direct, unreviewed push straight to
+`main` — know that before changing this step.
+
 Shared package metadata (`Authors`, `PackageLicenseExpression=MIT`,
 `RepositoryUrl`, `PackageProjectUrl`) lives once in the root
 `Directory.Build.props`, not per-project — change it there, not in each

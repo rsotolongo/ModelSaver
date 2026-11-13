@@ -4,7 +4,8 @@ name: Publish NuGet packages
 #   - Push a tag matching v*.*.* (e.g. "git tag v1.0.0 && git push origin v1.0.0")
 #   - Manual run from the Actions tab, supplying a version explicitly.
 # Publishes ProQualEx.ModelSaver.Core, .AspNetCore, and .Mvc5 together, in lockstep,
-# all stamped with the same version.
+# all stamped with the same version. On success, also commits that version back into
+# each csproj's <Version> on main, so the checked-in value never goes stale.
 #
 # Publishes via NuGet.org Trusted Publishing (OIDC) - no long-lived API key secret.
 # Requires a Trusted Publishing policy on nuget.org matching this repo + workflow file
@@ -21,7 +22,7 @@ on:
         required: true
 
 permissions:
-  contents: read
+  contents: write # the final step commits the released version back to each csproj
   id-token: write # required to request the GitHub OIDC token for NuGet Trusted Publishing
 
 jobs:
@@ -96,4 +97,39 @@ jobs:
         run: |
           Get-ChildItem -Path artifacts -Filter *.nupkg | ForEach-Object {
             dotnet nuget push $_.FullName --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+          }
+
+      - name: Bump <Version> in each csproj to the released version
+        if: success()
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        # A tag push checks out a detached commit, and main may have moved since the tag
+        # was cut, so re-sync to origin/main's tip rather than committing from that detached
+        # HEAD or an out-of-date local branch.
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+
+          $files = @(
+            'src/ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj',
+            'src/ProQualEx.ModelSaver.AspNetCore/ProQualEx.ModelSaver.AspNetCore.csproj',
+            'src/ProQualEx.ModelSaver.Mvc5/ProQualEx.ModelSaver.Mvc5.csproj'
+          )
+
+          foreach ($file in $files) {
+            (Get-Content $file -Raw) -replace '<Version>[^<]*</Version>', "<Version>$env:PACKAGE_VERSION</Version>" |
+              Set-Content $file -NoNewline
+          }
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add $files
+
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Version already $env:PACKAGE_VERSION in every csproj; nothing to commit."
+          }
+          else {
+            git commit -m "Bump package Version to $env:PACKAGE_VERSION [skip ci]"
+            git push origin main
           }
