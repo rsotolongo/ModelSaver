@@ -1,0 +1,88 @@
+@model ProQualEx.ModelSaver.Mvc5.Sample.Models.OrderEditModel
+@{
+    ViewBag.Title = "Order Saved";
+}
+
+<h1>Posted-back model</h1>
+<p class="lead">
+    Exactly what the <code>Save</code> action received. Everything
+    round-tripped, nested <code>ShippingAddress</code> and
+    <code>ShippingAddress.Location</code> included, except the properties
+    excluded with <code>[PersistOnPostback(false)]</code>, which arrive empty.
+</p>
+
+<div class="grid">
+<section class="card">
+    <h2>Order</h2>
+    <dl class="kv">
+        <div>
+            <dt>Id</dt>
+            <dd>@Model.Id</dd>
+        </div>
+        <div>
+            <dt>CustomerId</dt>
+            <dd>@Model.CustomerId</dd>
+        </div>
+        <div>
+            <dt>CreatedAtUtc</dt>
+            <dd>@Model.CreatedAtUtc</dd>
+        </div>
+        <div>
+            <dt>Total</dt>
+            <dd>@Model.Total</dd>
+        </div>
+    </dl>
+</section>
+
+<section class="card">
+    <h2>Customer</h2>
+    <dl class="kv">
+        <div>
+            <dt>CustomerName</dt>
+            <dd>@Model.CustomerName</dd>
+        </div>
+        <div>
+            <dt>DisplayOnlySummary</dt>
+            <dd>"@Model.DisplayOnlySummary"</dd>
+        </div>
+    </dl>
+</section>
+
+<section class="card">
+    <h2>ShippingAddress</h2>
+    <dl class="kv">
+        <div>
+            <dt>Street</dt>
+            <dd>@Model.ShippingAddress.Street</dd>
+        </div>
+        <div>
+            <dt>City</dt>
+            <dd>@Model.ShippingAddress.City</dd>
+        </div>
+        <div>
+            <dt>PostalCode</dt>
+            <dd>@Model.ShippingAddress.PostalCode</dd>
+        </div>
+        <div>
+            <dt>DeliveryInstructions</dt>
+            <dd>"@Model.ShippingAddress.DeliveryInstructions"</dd>
+        </div>
+    </dl>
+</section>
+
+<section class="card">
+    <h2>ShippingAddress.Location</h2>
+    <dl class="kv">
+        <div>
+            <dt>Latitude</dt>
+            <dd>@Model.ShippingAddress.Location.Latitude</dd>
+        </div>
+        <div>
+            <dt>Longitude</dt>
+            <dd>@Model.ShippingAddress.Location.Longitude</dd>
+        </div>
+    </dl>
+</section>
+</div>
+
+@Html.ActionLink("Back to edit", "Edit", null, new { @class = "btn btn-ghost" })

@@ -1,4 +1,4 @@
-# ModelSaver: automatic hidden-field persistence for ASP.NET MVC
+# ProQualEx.ModelSaver: automatic hidden-field persistence for ASP.NET MVC
 
 ## Problem
 
@@ -10,7 +10,7 @@ keys, timestamps, etc.) have to be added as hidden fields by hand, one by
 one. This is tedious and error-prone: a forgotten hidden field is a silent
 data-loss bug that only surfaces on postback.
 
-ModelSaver removes the manual step: properties are marked with an
+ProQualEx.ModelSaver removes the manual step: properties are marked with an
 attribute, and a form-scoped helper automatically emits hidden fields for
 every marked property that wasn't already rendered as a visible input —
 determined by inspecting the form's actual rendered output, not by
@@ -42,7 +42,7 @@ addressed by this design):
 ## Attribute API
 
 One attribute, valid on both class and property, defined in
-`ModelSaver.Core`:
+`ProQualEx.ModelSaver.Core`:
 
 ```csharp
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
@@ -70,14 +70,14 @@ This supports all three usage styles:
 - **Mixed**: combine both per class as needed.
 
 For a complex-typed property, the property's own resolved `Persist` value
-determines whether ModelSaver descends into it at all. Once inside, the
+determines whether ProQualEx.ModelSaver descends into it at all. Once inside, the
 nested type's members are resolved using the nested type's *own*
 class/property attributes — nesting does not inherit the parent's
 default. A null complex property is skipped entirely (no hidden fields
 for a subtree that has no value; this matches default model-binder
 behavior for null nested objects).
 
-## Core diff algorithm (`ModelSaver.Core`)
+## Core diff algorithm (`ProQualEx.ModelSaver.Core`)
 
 Framework-agnostic, no dependency on `System.Web.Mvc` or
 `Microsoft.AspNetCore.Mvc`. Pure reflection + string processing so it's
@@ -107,7 +107,7 @@ fully unit-testable without any ASP.NET hosting.
    - `value` is formatted with `Convert.ToString(value, CultureInfo.CurrentCulture)`.
      This deliberately matches the formatting convention `Html.HiddenFor`
      and `Html.TextBoxFor` already use, so a property rendered as a
-     hidden field via ModelSaver formats identically to how it would have
+     hidden field via ProQualEx.ModelSaver formats identically to how it would have
      formatted had it been rendered explicitly. (Earlier discussion of
      this design considered `InvariantCulture`; that would silently
      diverge from the rest of the form's existing fields and was
@@ -119,7 +119,7 @@ so wrapping a form doesn't require every model to opt in.
 
 ## Framework adapters
 
-### `ModelSaver.AspNetCore`
+### `ProQualEx.ModelSaver.AspNetCore`
 
 A Tag Helper targeting `<form>` elements carrying a new attribute:
 
@@ -146,7 +146,7 @@ Usage: `<form asp-action="Save" asp-persist-model="Model"> ... </form>`.
 No output-buffering trickery is needed — Tag Helpers already provide
 rendered child content before the tag closes.
 
-### `ModelSaver.Mvc5`
+### `ProQualEx.ModelSaver.Mvc5`
 
 No Tag Helper equivalent exists in classic MVC, so the adapter uses an
 `IDisposable` scope mirroring `Html.BeginForm`:
@@ -177,26 +177,26 @@ form scale.
 ## Package layout
 
 ```
-ModelSaver.sln
+ProQualEx.ModelSaver.sln
 src/
-  ModelSaver.Core/        (netstandard2.0 — attribute, diff algorithm,
+  ProQualEx.ModelSaver.Core/        (netstandard2.0 — attribute, diff algorithm,
                             path builder, name scanner, value formatter,
                             hidden-field HTML renderer)
-  ModelSaver.Mvc5/         (net472 — depends on Core + System.Web.Mvc)
-  ModelSaver.AspNetCore/   (net6.0+ — depends on Core +
+  ProQualEx.ModelSaver.Mvc5/         (net472 — depends on Core + System.Web.Mvc)
+  ProQualEx.ModelSaver.AspNetCore/   (net6.0+ — depends on Core +
                             Microsoft.AspNetCore.Mvc.Razor)
 tests/
-  ModelSaver.Core.Tests/
-  ModelSaver.Mvc5.Tests/
-  ModelSaver.AspNetCore.Tests/
+  ProQualEx.ModelSaver.Core.Tests/
+  ProQualEx.ModelSaver.Mvc5.Tests/
+  ProQualEx.ModelSaver.AspNetCore.Tests/
 ```
 
-Published as three NuGet packages: `ModelSaver.Core`,
-`ModelSaver.Mvc5`, `ModelSaver.AspNetCore`.
+Published as three NuGet packages: `ProQualEx.ModelSaver.Core`,
+`ProQualEx.ModelSaver.Mvc5`, `ProQualEx.ModelSaver.AspNetCore`.
 
 ## Testing strategy
 
-- **`ModelSaver.Core.Tests`** (xUnit, no ASP.NET dependency):
+- **`ProQualEx.ModelSaver.Core.Tests`** (xUnit, no ASP.NET dependency):
   - Attribute-resolution matrix: no attributes, class-only, property-only,
     both, property override of class default, nested type with its own
     independent attribute configuration.
@@ -207,11 +207,11 @@ Published as three NuGet packages: `ModelSaver.Core`,
     multiple forms' worth of markup.
   - Value formatting matches `CurrentCulture` conversion for `DateTime`,
     numeric types, `enum`, `Guid`, `bool`, `string`.
-- **`ModelSaver.AspNetCore.Tests`**: standard Tag Helper unit-test
+- **`ProQualEx.ModelSaver.AspNetCore.Tests`**: standard Tag Helper unit-test
   pattern — construct `TagHelperContext`/`TagHelperOutput` directly with
   fixed child content, run `ProcessAsync`, assert the final output HTML
   contains exactly the expected hidden fields and nothing else.
-- **`ModelSaver.Mvc5.Tests`**: unit-test the buffer-diff-splice logic
+- **`ProQualEx.ModelSaver.Mvc5.Tests`**: unit-test the buffer-diff-splice logic
   directly against raw HTML strings representing a fully-rendered
   `<form>...</form>`, bypassing real `HttpContext`/Razor rendering (the
   novel logic here is the splice, not MVC's own form rendering, which is

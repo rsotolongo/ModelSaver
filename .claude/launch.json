@@ -2,9 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "ModelSaver.AspNetCore.Sample",
+      "name": "ProQualEx.ModelSaver.AspNetCore.Sample",
       "runtimeExecutable": "dotnet",
-      "runtimeArgs": ["run", "--project", "samples/ModelSaver.AspNetCore.Sample"],
+      "runtimeArgs": ["run", "--project", "samples/ProQualEx.ModelSaver.AspNetCore.Sample"],
       "port": 5247
     }
   ]

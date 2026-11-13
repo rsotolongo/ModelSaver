@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PackageId>ProQualEx.ModelSaver.AspNetCore</PackageId>
+    <Version>0.1.0</Version>
+    <Description>ASP.NET Core Tag Helper adapter for ProQualEx.ModelSaver: automatic hidden-field persistence for &lt;form&gt; elements.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj" />
+  </ItemGroup>
+
+</Project>

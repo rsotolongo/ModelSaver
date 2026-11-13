@@ -1,10 +1,10 @@
-# ModelSaver Hidden-Field Persistence Implementation Plan
+# ProQualEx.ModelSaver Hidden-Field Persistence Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build ModelSaver — a NuGet library that automatically emits hidden fields for `[PersistOnPostback]`-marked model properties missing from a rendered ASP.NET MVC form, for both MVC5 and ASP.NET Core.
+**Goal:** Build ProQualEx.ModelSaver — a NuGet library that automatically emits hidden fields for `[PersistOnPostback]`-marked model properties missing from a rendered ASP.NET MVC form, for both MVC5 and ASP.NET Core.
 
-**Architecture:** A framework-agnostic `ModelSaver.Core` library holds the attribute, the eligible-path/diff/format/scan algorithm, and the hidden-field HTML renderer. Two thin adapters — `ModelSaver.Mvc5` (System.Web.Mvc, an output-buffering `IDisposable` form scope) and `ModelSaver.AspNetCore` (a `<form>` Tag Helper) — call into Core to decide what's missing and splice/append the hidden fields into the form's HTML.
+**Architecture:** A framework-agnostic `ProQualEx.ModelSaver.Core` library holds the attribute, the eligible-path/diff/format/scan algorithm, and the hidden-field HTML renderer. Two thin adapters — `ProQualEx.ModelSaver.Mvc5` (System.Web.Mvc, an output-buffering `IDisposable` form scope) and `ProQualEx.ModelSaver.AspNetCore` (a `<form>` Tag Helper) — call into Core to decide what's missing and splice/append the hidden fields into the form's HTML.
 
 **Tech Stack:** .NET 10 SDK (10.0.111 — the only SDK installed on the dev machine this plan was authored on), C# with `<LangVersion>latest</LangVersion>` everywhere, xUnit 2.9.3, `Microsoft.AspNet.Mvc` 5.2.9 (brings in `System.Web.Mvc`), `Microsoft.NET.Sdk.Razor` + `<FrameworkReference Include="Microsoft.AspNetCore.App" />` for the ASP.NET Core adapter (this combination was spiked and confirmed to compile and unit-test correctly on Linux without a running web server).
 
@@ -12,27 +12,27 @@
 
 ## Global Constraints
 
-- Target frameworks: `ModelSaver.Core` → `netstandard2.0`; `ModelSaver.Core.Tests` → `net10.0`; `ModelSaver.AspNetCore` and `ModelSaver.AspNetCore.Tests` → `net10.0` via SDK `Microsoft.NET.Sdk.Razor` + `<FrameworkReference Include="Microsoft.AspNetCore.App" />`; `ModelSaver.Mvc5` and `ModelSaver.Mvc5.Tests` → `net472`.
+- Target frameworks: `ProQualEx.ModelSaver.Core` → `netstandard2.0`; `ProQualEx.ModelSaver.Core.Tests` → `net10.0`; `ProQualEx.ModelSaver.AspNetCore` and `ProQualEx.ModelSaver.AspNetCore.Tests` → `net10.0` via SDK `Microsoft.NET.Sdk.Razor` + `<FrameworkReference Include="Microsoft.AspNetCore.App" />`; `ProQualEx.ModelSaver.Mvc5` and `ProQualEx.ModelSaver.Mvc5.Tests` → `net472`.
 - Every csproj sets `<LangVersion>latest</LangVersion>`, `<Nullable>enable</Nullable>`, and `<ImplicitUsings>enable</ImplicitUsings>`. This was spiked on net472 with the `Microsoft.AspNet.Mvc` package too: it builds clean (nullable annotations just produce ordinary compiler warnings against System.Web.Mvc's unannotated API, never errors).
-- No `record`/`init`-only types anywhere in `ModelSaver.Core` — it targets `netstandard2.0`, which lacks the `IsExternalInit` runtime shim needed for `init` accessors. Use plain classes with constructor-set, get-only properties instead.
-- Public API lives directly in the `ModelSaver` / `ModelSaver.AspNetCore` / `ModelSaver.Mvc5` namespaces. Implementation details not meant for consumers live under an `Internal` sub-namespace, are `internal`, and are exposed to their matching test project only via `[assembly: InternalsVisibleTo("...")]` in an `AssemblyInfo.cs` at the project root.
-- **Known environment gap:** this machine has no Mono installed, so `dotnet test` cannot execute `net472` binaries here — only `dotnet build` can verify `ModelSaver.Mvc5`/`ModelSaver.Mvc5.Tests` compile. Task 9 assumes Mono has been installed by the time it runs (the user was asked to run `sudo apt-get install -y mono-devel` themselves — this is not something an agent should run, as installing system packages is outside what an agent may do unilaterally). If `dotnet test` on that project still reports `Could not find 'mono' host`, fall back to `dotnet build` for verification and say so plainly — do not claim the tests passed if they didn't actually run.
-- All commands below assume the working directory is the repo root (`/home/rsotolongo/Projects/ModelSaver`) unless a step says otherwise. `git commit` messages should NOT include a Co-Authored-By trailer unless the human running this plan asks for one, since it wasn't requested for this repo.
+- No `record`/`init`-only types anywhere in `ProQualEx.ModelSaver.Core` — it targets `netstandard2.0`, which lacks the `IsExternalInit` runtime shim needed for `init` accessors. Use plain classes with constructor-set, get-only properties instead.
+- Public API lives directly in the `ProQualEx.ModelSaver` / `ProQualEx.ModelSaver.AspNetCore` / `ProQualEx.ModelSaver.Mvc5` namespaces. Implementation details not meant for consumers live under an `Internal` sub-namespace, are `internal`, and are exposed to their matching test project only via `[assembly: InternalsVisibleTo("...")]` in an `AssemblyInfo.cs` at the project root.
+- **Known environment gap:** this machine has no Mono installed, so `dotnet test` cannot execute `net472` binaries here — only `dotnet build` can verify `ProQualEx.ModelSaver.Mvc5`/`ProQualEx.ModelSaver.Mvc5.Tests` compile. Task 9 assumes Mono has been installed by the time it runs (the user was asked to run `sudo apt-get install -y mono-devel` themselves — this is not something an agent should run, as installing system packages is outside what an agent may do unilaterally). If `dotnet test` on that project still reports `Could not find 'mono' host`, fall back to `dotnet build` for verification and say so plainly — do not claim the tests passed if they didn't actually run.
+- All commands below assume the working directory is the repo root (`/home/rsotolongo/Projects/ProQualEx.ModelSaver`) unless a step says otherwise. `git commit` messages should NOT include a Co-Authored-By trailer unless the human running this plan asks for one, since it wasn't requested for this repo.
 
 ---
 
-### Task 1: Solution scaffold + `ModelSaver.Core` skeleton
+### Task 1: Solution scaffold + `ProQualEx.ModelSaver.Core` skeleton
 
 **Files:**
 - Create: `.gitignore`
-- Create: `ModelSaver.sln`
-- Create: `src/ModelSaver.Core/ModelSaver.Core.csproj`
-- Create: `src/ModelSaver.Core/AssemblyInfo.cs`
-- Create: `tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
-- Create: `tests/ModelSaver.Core.Tests/ScaffoldSmokeTests.cs`
+- Create: `ProQualEx.ModelSaver.sln`
+- Create: `src/ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj`
+- Create: `src/ProQualEx.ModelSaver.Core/AssemblyInfo.cs`
+- Create: `tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
+- Create: `tests/ProQualEx.ModelSaver.Core.Tests/ScaffoldSmokeTests.cs`
 
 **Interfaces:**
-- Produces: a solution (`ModelSaver.sln`) that later tasks add projects to; the `ModelSaver.Core` / `ModelSaver.Core.Tests` project pair and its `InternalsVisibleTo` wiring, which every later Core task builds on.
+- Produces: a solution (`ProQualEx.ModelSaver.sln`) that later tasks add projects to; the `ProQualEx.ModelSaver.Core` / `ProQualEx.ModelSaver.Core.Tests` project pair and its `InternalsVisibleTo` wiring, which every later Core task builds on.
 
 - [ ] **Step 1: Create `.gitignore`**
 
@@ -46,17 +46,17 @@ obj/
 - [ ] **Step 2: Create the solution file**
 
 ```bash
-dotnet new sln -n ModelSaver
+dotnet new sln -n ProQualEx.ModelSaver
 ```
 
-- [ ] **Step 3: Scaffold the `ModelSaver.Core` project**
+- [ ] **Step 3: Scaffold the `ProQualEx.ModelSaver.Core` project**
 
 ```bash
-dotnet new classlib -n ModelSaver.Core -o src/ModelSaver.Core -f netstandard2.0
-rm src/ModelSaver.Core/Class1.cs
+dotnet new classlib -n ProQualEx.ModelSaver.Core -o src/ProQualEx.ModelSaver.Core -f netstandard2.0
+rm src/ProQualEx.ModelSaver.Core/Class1.cs
 ```
 
-Replace the generated `src/ModelSaver.Core/ModelSaver.Core.csproj` with:
+Replace the generated `src/ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj` with:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
@@ -74,27 +74,27 @@ Replace the generated `src/ModelSaver.Core/ModelSaver.Core.csproj` with:
 - [ ] **Step 4: Add the project to the solution**
 
 ```bash
-dotnet sln ModelSaver.sln add src/ModelSaver.Core/ModelSaver.Core.csproj
+dotnet sln ProQualEx.ModelSaver.sln add src/ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj
 ```
 
 - [ ] **Step 5: Wire up `InternalsVisibleTo` for the test project**
 
-Create `src/ModelSaver.Core/AssemblyInfo.cs`:
+Create `src/ProQualEx.ModelSaver.Core/AssemblyInfo.cs`:
 
 ```csharp
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("ModelSaver.Core.Tests")]
+[assembly: InternalsVisibleTo("ProQualEx.ModelSaver.Core.Tests")]
 ```
 
-- [ ] **Step 6: Scaffold the `ModelSaver.Core.Tests` project**
+- [ ] **Step 6: Scaffold the `ProQualEx.ModelSaver.Core.Tests` project**
 
 ```bash
-dotnet new xunit -n ModelSaver.Core.Tests -o tests/ModelSaver.Core.Tests -f net10.0
-rm tests/ModelSaver.Core.Tests/UnitTest1.cs
+dotnet new xunit -n ProQualEx.ModelSaver.Core.Tests -o tests/ProQualEx.ModelSaver.Core.Tests -f net10.0
+rm tests/ProQualEx.ModelSaver.Core.Tests/UnitTest1.cs
 ```
 
-Replace the generated `tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj` with:
+Replace the generated `tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj` with:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
@@ -118,7 +118,7 @@ Replace the generated `tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/ModelSaver.Core/ModelSaver.Core.csproj" />
+    <ProjectReference Include="../../src/ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj" />
   </ItemGroup>
 
 </Project>
@@ -127,15 +127,15 @@ Replace the generated `tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
 - [ ] **Step 7: Add the test project to the solution**
 
 ```bash
-dotnet sln ModelSaver.sln add tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj
+dotnet sln ProQualEx.ModelSaver.sln add tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj
 ```
 
 - [ ] **Step 8: Write a scaffold smoke test**
 
-Create `tests/ModelSaver.Core.Tests/ScaffoldSmokeTests.cs`:
+Create `tests/ProQualEx.ModelSaver.Core.Tests/ScaffoldSmokeTests.cs`:
 
 ```csharp
-namespace ModelSaver.Core.Tests;
+namespace ProQualEx.ModelSaver.Core.Tests;
 
 public class ScaffoldSmokeTests
 {
@@ -151,14 +151,14 @@ This has nothing to do with the real feature — it only proves the solution/bui
 
 - [ ] **Step 9: Run the tests, verify PASS**
 
-Run: `dotnet test tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
 Expected: `Passed! - Failed: 0, Passed: 1, Skipped: 0, Total: 1`
 
 - [ ] **Step 10: Commit**
 
 ```bash
-git add .gitignore ModelSaver.sln src/ModelSaver.Core tests/ModelSaver.Core.Tests
-git commit -m "Scaffold ModelSaver.Core project and test harness"
+git add .gitignore ProQualEx.ModelSaver.sln src/ProQualEx.ModelSaver.Core tests/ProQualEx.ModelSaver.Core.Tests
+git commit -m "Scaffold ProQualEx.ModelSaver.Core project and test harness"
 ```
 
 ---
@@ -166,23 +166,23 @@ git commit -m "Scaffold ModelSaver.Core project and test harness"
 ### Task 2: `PersistOnPostbackAttribute` + attribute resolution
 
 **Files:**
-- Create: `src/ModelSaver.Core/PersistOnPostbackAttribute.cs`
-- Create: `src/ModelSaver.Core/Internal/PersistenceResolver.cs`
-- Test: `tests/ModelSaver.Core.Tests/PersistenceResolverTests.cs`
+- Create: `src/ProQualEx.ModelSaver.Core/PersistOnPostbackAttribute.cs`
+- Create: `src/ProQualEx.ModelSaver.Core/Internal/PersistenceResolver.cs`
+- Test: `tests/ProQualEx.ModelSaver.Core.Tests/PersistenceResolverTests.cs`
 
 **Interfaces:**
 - Consumes: nothing from earlier tasks (this is the foundation).
-- Produces: `ModelSaver.PersistOnPostbackAttribute` (public, usable on `Class` or `Property`, constructor `PersistOnPostbackAttribute(bool persist = true)`, property `bool Persist`) and `ModelSaver.Internal.PersistenceResolver.ShouldPersist(PropertyInfo property) : bool`, which Task 3's path collector depends on directly.
+- Produces: `ProQualEx.ModelSaver.PersistOnPostbackAttribute` (public, usable on `Class` or `Property`, constructor `PersistOnPostbackAttribute(bool persist = true)`, property `bool Persist`) and `ProQualEx.ModelSaver.Internal.PersistenceResolver.ShouldPersist(PropertyInfo property) : bool`, which Task 3's path collector depends on directly.
 
 - [ ] **Step 1: Write the failing tests**
 
-Create `tests/ModelSaver.Core.Tests/PersistenceResolverTests.cs`:
+Create `tests/ProQualEx.ModelSaver.Core.Tests/PersistenceResolverTests.cs`:
 
 ```csharp
-using ModelSaver;
-using ModelSaver.Internal;
+using ProQualEx.ModelSaver;
+using ProQualEx.ModelSaver.Internal;
 
-namespace ModelSaver.Core.Tests;
+namespace ProQualEx.ModelSaver.Core.Tests;
 
 public class NoAttributesModel
 {
@@ -270,17 +270,17 @@ public class PersistenceResolverTests
 
 - [ ] **Step 2: Run tests, verify they fail to compile**
 
-Run: `dotnet test tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
 Expected: FAIL — `PersistOnPostbackAttribute` and `PersistenceResolver` do not exist yet.
 
 - [ ] **Step 3: Implement `PersistOnPostbackAttribute`**
 
-Create `src/ModelSaver.Core/PersistOnPostbackAttribute.cs`:
+Create `src/ProQualEx.ModelSaver.Core/PersistOnPostbackAttribute.cs`:
 
 ```csharp
 using System;
 
-namespace ModelSaver;
+namespace ProQualEx.ModelSaver;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false)]
 public sealed class PersistOnPostbackAttribute : Attribute
@@ -296,13 +296,13 @@ public sealed class PersistOnPostbackAttribute : Attribute
 
 - [ ] **Step 4: Implement `PersistenceResolver`**
 
-Create `src/ModelSaver.Core/Internal/PersistenceResolver.cs`:
+Create `src/ProQualEx.ModelSaver.Core/Internal/PersistenceResolver.cs`:
 
 ```csharp
 using System;
 using System.Reflection;
 
-namespace ModelSaver.Internal;
+namespace ProQualEx.ModelSaver.Internal;
 
 internal static class PersistenceResolver
 {
@@ -327,13 +327,13 @@ internal static class PersistenceResolver
 
 - [ ] **Step 5: Run tests, verify PASS**
 
-Run: `dotnet test tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
 Expected: all 7 tests pass.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/ModelSaver.Core tests/ModelSaver.Core.Tests
+git add src/ProQualEx.ModelSaver.Core tests/ProQualEx.ModelSaver.Core.Tests
 git commit -m "Add PersistOnPostbackAttribute and its resolution rules"
 ```
 
@@ -342,24 +342,24 @@ git commit -m "Add PersistOnPostbackAttribute and its resolution rules"
 ### Task 3: Eligible-path collection (flat + nested objects)
 
 **Files:**
-- Create: `src/ModelSaver.Core/Internal/ScalarTypes.cs`
-- Create: `src/ModelSaver.Core/Internal/EligiblePath.cs`
-- Create: `src/ModelSaver.Core/Internal/EligiblePathCollector.cs`
-- Create: `tests/ModelSaver.Core.Tests/TestModels.cs`
-- Test: `tests/ModelSaver.Core.Tests/EligiblePathCollectorTests.cs`
+- Create: `src/ProQualEx.ModelSaver.Core/Internal/ScalarTypes.cs`
+- Create: `src/ProQualEx.ModelSaver.Core/Internal/EligiblePath.cs`
+- Create: `src/ProQualEx.ModelSaver.Core/Internal/EligiblePathCollector.cs`
+- Create: `tests/ProQualEx.ModelSaver.Core.Tests/TestModels.cs`
+- Test: `tests/ProQualEx.ModelSaver.Core.Tests/EligiblePathCollectorTests.cs`
 
 **Interfaces:**
-- Consumes: `ModelSaver.Internal.PersistenceResolver.ShouldPersist(PropertyInfo)` from Task 2.
-- Produces: `ModelSaver.Internal.EligiblePath` (properties `string Name`, `object? Value`, `Type ValueType`) and `ModelSaver.Internal.EligiblePathCollector.Collect(object model) : IReadOnlyList<EligiblePath>`, which Task 6's `HiddenFieldDiffer` depends on directly. Also produces `tests/ModelSaver.Core.Tests/TestModels.cs`, a shared fixture file that Task 6's tests reuse (`FlatModel`, `AddressModel`, `NoAttributeAddressModel`, `ParentWithNestedModel`, `ParentWithNestedNoAttributeModel`).
+- Consumes: `ProQualEx.ModelSaver.Internal.PersistenceResolver.ShouldPersist(PropertyInfo)` from Task 2.
+- Produces: `ProQualEx.ModelSaver.Internal.EligiblePath` (properties `string Name`, `object? Value`, `Type ValueType`) and `ProQualEx.ModelSaver.Internal.EligiblePathCollector.Collect(object model) : IReadOnlyList<EligiblePath>`, which Task 6's `HiddenFieldDiffer` depends on directly. Also produces `tests/ProQualEx.ModelSaver.Core.Tests/TestModels.cs`, a shared fixture file that Task 6's tests reuse (`FlatModel`, `AddressModel`, `NoAttributeAddressModel`, `ParentWithNestedModel`, `ParentWithNestedNoAttributeModel`).
 
 - [ ] **Step 1: Write the shared test model fixtures**
 
-Create `tests/ModelSaver.Core.Tests/TestModels.cs`:
+Create `tests/ProQualEx.ModelSaver.Core.Tests/TestModels.cs`:
 
 ```csharp
-using ModelSaver;
+using ProQualEx.ModelSaver;
 
-namespace ModelSaver.Core.Tests;
+namespace ProQualEx.ModelSaver.Core.Tests;
 
 [PersistOnPostback]
 public class FlatModel
@@ -397,12 +397,12 @@ public class ParentWithNestedNoAttributeModel
 
 - [ ] **Step 2: Write the failing tests**
 
-Create `tests/ModelSaver.Core.Tests/EligiblePathCollectorTests.cs`:
+Create `tests/ProQualEx.ModelSaver.Core.Tests/EligiblePathCollectorTests.cs`:
 
 ```csharp
-using ModelSaver.Internal;
+using ProQualEx.ModelSaver.Internal;
 
-namespace ModelSaver.Core.Tests;
+namespace ProQualEx.ModelSaver.Core.Tests;
 
 public class EligiblePathCollectorTests
 {
@@ -458,17 +458,17 @@ public class EligiblePathCollectorTests
 
 - [ ] **Step 3: Run tests, verify they fail to compile**
 
-Run: `dotnet test tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
 Expected: FAIL — `EligiblePathCollector` does not exist yet.
 
 - [ ] **Step 4: Implement `ScalarTypes`**
 
-Create `src/ModelSaver.Core/Internal/ScalarTypes.cs`:
+Create `src/ProQualEx.ModelSaver.Core/Internal/ScalarTypes.cs`:
 
 ```csharp
 using System;
 
-namespace ModelSaver.Internal;
+namespace ProQualEx.ModelSaver.Internal;
 
 internal static class ScalarTypes
 {
@@ -495,12 +495,12 @@ internal static class ScalarTypes
 
 - [ ] **Step 5: Implement `EligiblePath`**
 
-Create `src/ModelSaver.Core/Internal/EligiblePath.cs`:
+Create `src/ProQualEx.ModelSaver.Core/Internal/EligiblePath.cs`:
 
 ```csharp
 using System;
 
-namespace ModelSaver.Internal;
+namespace ProQualEx.ModelSaver.Internal;
 
 internal sealed class EligiblePath
 {
@@ -519,14 +519,14 @@ internal sealed class EligiblePath
 
 - [ ] **Step 6: Implement `EligiblePathCollector`**
 
-Create `src/ModelSaver.Core/Internal/EligiblePathCollector.cs`:
+Create `src/ProQualEx.ModelSaver.Core/Internal/EligiblePathCollector.cs`:
 
 ```csharp
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace ModelSaver.Internal;
+namespace ProQualEx.ModelSaver.Internal;
 
 internal static class EligiblePathCollector
 {
@@ -568,13 +568,13 @@ internal static class EligiblePathCollector
 
 - [ ] **Step 7: Run tests, verify PASS**
 
-Run: `dotnet test tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
 Expected: all tests pass (11 total so far).
 
 - [ ] **Step 8: Commit**
 
 ```bash
-git add src/ModelSaver.Core tests/ModelSaver.Core.Tests
+git add src/ProQualEx.ModelSaver.Core tests/ProQualEx.ModelSaver.Core.Tests
 git commit -m "Add eligible-path collection for flat and nested-object properties"
 ```
 
@@ -583,23 +583,23 @@ git commit -m "Add eligible-path collection for flat and nested-object propertie
 ### Task 4: Value formatting
 
 **Files:**
-- Create: `src/ModelSaver.Core/Internal/PersistValueFormatter.cs`
-- Test: `tests/ModelSaver.Core.Tests/PersistValueFormatterTests.cs`
+- Create: `src/ProQualEx.ModelSaver.Core/Internal/PersistValueFormatter.cs`
+- Test: `tests/ProQualEx.ModelSaver.Core.Tests/PersistValueFormatterTests.cs`
 
 **Interfaces:**
 - Consumes: nothing from earlier tasks.
-- Produces: `ModelSaver.Internal.PersistValueFormatter.Format(object? value) : string`, which Task 6's `HiddenFieldDiffer` depends on directly.
+- Produces: `ProQualEx.ModelSaver.Internal.PersistValueFormatter.Format(object? value) : string`, which Task 6's `HiddenFieldDiffer` depends on directly.
 
 - [ ] **Step 1: Write the failing tests**
 
-Create `tests/ModelSaver.Core.Tests/PersistValueFormatterTests.cs`:
+Create `tests/ProQualEx.ModelSaver.Core.Tests/PersistValueFormatterTests.cs`:
 
 ```csharp
 using System;
 using System.Globalization;
-using ModelSaver.Internal;
+using ProQualEx.ModelSaver.Internal;
 
-namespace ModelSaver.Core.Tests;
+namespace ProQualEx.ModelSaver.Core.Tests;
 
 public class PersistValueFormatterTests
 {
@@ -656,18 +656,18 @@ public class PersistValueFormatterTests
 
 - [ ] **Step 2: Run tests, verify they fail to compile**
 
-Run: `dotnet test tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
 Expected: FAIL — `PersistValueFormatter` does not exist yet.
 
 - [ ] **Step 3: Implement `PersistValueFormatter`**
 
-Create `src/ModelSaver.Core/Internal/PersistValueFormatter.cs`:
+Create `src/ProQualEx.ModelSaver.Core/Internal/PersistValueFormatter.cs`:
 
 ```csharp
 using System;
 using System.Globalization;
 
-namespace ModelSaver.Internal;
+namespace ProQualEx.ModelSaver.Internal;
 
 internal static class PersistValueFormatter
 {
@@ -685,13 +685,13 @@ internal static class PersistValueFormatter
 
 - [ ] **Step 4: Run tests, verify PASS**
 
-Run: `dotnet test tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
 Expected: all tests pass (17 total so far).
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModelSaver.Core tests/ModelSaver.Core.Tests
+git add src/ProQualEx.ModelSaver.Core tests/ProQualEx.ModelSaver.Core.Tests
 git commit -m "Add value formatting matching HiddenFor's CurrentCulture convention"
 ```
 
@@ -700,22 +700,22 @@ git commit -m "Add value formatting matching HiddenFor's CurrentCulture conventi
 ### Task 5: Rendered-name scanning
 
 **Files:**
-- Create: `src/ModelSaver.Core/Internal/RenderedNameScanner.cs`
-- Test: `tests/ModelSaver.Core.Tests/RenderedNameScannerTests.cs`
+- Create: `src/ProQualEx.ModelSaver.Core/Internal/RenderedNameScanner.cs`
+- Test: `tests/ProQualEx.ModelSaver.Core.Tests/RenderedNameScannerTests.cs`
 
 **Interfaces:**
 - Consumes: nothing from earlier tasks.
-- Produces: `ModelSaver.Internal.RenderedNameScanner.ExtractNames(string html) : HashSet<string>`, which Task 6's `HiddenFieldDiffer` depends on directly.
+- Produces: `ProQualEx.ModelSaver.Internal.RenderedNameScanner.ExtractNames(string html) : HashSet<string>`, which Task 6's `HiddenFieldDiffer` depends on directly.
 
 - [ ] **Step 1: Write the failing tests**
 
-Create `tests/ModelSaver.Core.Tests/RenderedNameScannerTests.cs`:
+Create `tests/ProQualEx.ModelSaver.Core.Tests/RenderedNameScannerTests.cs`:
 
 ```csharp
 using System.Collections.Generic;
-using ModelSaver.Internal;
+using ProQualEx.ModelSaver.Internal;
 
-namespace ModelSaver.Core.Tests;
+namespace ProQualEx.ModelSaver.Core.Tests;
 
 public class RenderedNameScannerTests
 {
@@ -776,19 +776,19 @@ public class RenderedNameScannerTests
 
 - [ ] **Step 2: Run tests, verify they fail to compile**
 
-Run: `dotnet test tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
 Expected: FAIL — `RenderedNameScanner` does not exist yet.
 
 - [ ] **Step 3: Implement `RenderedNameScanner`**
 
-Create `src/ModelSaver.Core/Internal/RenderedNameScanner.cs`:
+Create `src/ProQualEx.ModelSaver.Core/Internal/RenderedNameScanner.cs`:
 
 ```csharp
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace ModelSaver.Internal;
+namespace ProQualEx.ModelSaver.Internal;
 
 internal static class RenderedNameScanner
 {
@@ -850,13 +850,13 @@ internal static class RenderedNameScanner
 
 - [ ] **Step 4: Run tests, verify PASS**
 
-Run: `dotnet test tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
 Expected: all tests pass (23 total so far).
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ModelSaver.Core tests/ModelSaver.Core.Tests
+git add src/ProQualEx.ModelSaver.Core tests/ProQualEx.ModelSaver.Core.Tests
 git commit -m "Add rendered-name scanning to detect fields already on the form"
 ```
 
@@ -865,23 +865,23 @@ git commit -m "Add rendered-name scanning to detect fields already on the form"
 ### Task 6: `HiddenFieldDiffer` (public diff API)
 
 **Files:**
-- Create: `src/ModelSaver.Core/PersistField.cs`
-- Create: `src/ModelSaver.Core/HiddenFieldDiffer.cs`
-- Test: `tests/ModelSaver.Core.Tests/HiddenFieldDifferTests.cs`
+- Create: `src/ProQualEx.ModelSaver.Core/PersistField.cs`
+- Create: `src/ProQualEx.ModelSaver.Core/HiddenFieldDiffer.cs`
+- Test: `tests/ProQualEx.ModelSaver.Core.Tests/HiddenFieldDifferTests.cs`
 
 **Interfaces:**
 - Consumes: `EligiblePathCollector.Collect` (Task 3), `PersistValueFormatter.Format` (Task 4), `RenderedNameScanner.ExtractNames` (Task 5).
-- Produces: `ModelSaver.PersistField` (public, properties `string Name`, `string Value`, constructor `PersistField(string name, string value)`) and `ModelSaver.HiddenFieldDiffer.GetMissingFields(object model, string renderedFormHtml) : IReadOnlyList<PersistField>` — the single public entry point both framework adapters (Tasks 8 and 9) call.
+- Produces: `ProQualEx.ModelSaver.PersistField` (public, properties `string Name`, `string Value`, constructor `PersistField(string name, string value)`) and `ProQualEx.ModelSaver.HiddenFieldDiffer.GetMissingFields(object model, string renderedFormHtml) : IReadOnlyList<PersistField>` — the single public entry point both framework adapters (Tasks 8 and 9) call.
 
 - [ ] **Step 1: Write the failing tests**
 
-Create `tests/ModelSaver.Core.Tests/HiddenFieldDifferTests.cs`:
+Create `tests/ProQualEx.ModelSaver.Core.Tests/HiddenFieldDifferTests.cs`:
 
 ```csharp
 using System;
-using ModelSaver;
+using ProQualEx.ModelSaver;
 
-namespace ModelSaver.Core.Tests;
+namespace ProQualEx.ModelSaver.Core.Tests;
 
 public class HiddenFieldDifferTests
 {
@@ -940,17 +940,17 @@ public class HiddenFieldDifferTests
 
 - [ ] **Step 2: Run tests, verify they fail to compile**
 
-Run: `dotnet test tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
 Expected: FAIL — `PersistField` and `HiddenFieldDiffer` do not exist yet.
 
 - [ ] **Step 3: Implement `PersistField`**
 
-Create `src/ModelSaver.Core/PersistField.cs`:
+Create `src/ProQualEx.ModelSaver.Core/PersistField.cs`:
 
 ```csharp
 using System;
 
-namespace ModelSaver;
+namespace ProQualEx.ModelSaver;
 
 public sealed class PersistField
 {
@@ -967,15 +967,15 @@ public sealed class PersistField
 
 - [ ] **Step 4: Implement `HiddenFieldDiffer`**
 
-Create `src/ModelSaver.Core/HiddenFieldDiffer.cs`:
+Create `src/ProQualEx.ModelSaver.Core/HiddenFieldDiffer.cs`:
 
 ```csharp
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ModelSaver.Internal;
+using ProQualEx.ModelSaver.Internal;
 
-namespace ModelSaver;
+namespace ProQualEx.ModelSaver;
 
 public static class HiddenFieldDiffer
 {
@@ -1004,39 +1004,39 @@ public static class HiddenFieldDiffer
 
 - [ ] **Step 5: Run tests, verify PASS**
 
-Run: `dotnet test tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
 Expected: all tests pass (28 total so far).
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/ModelSaver.Core tests/ModelSaver.Core.Tests
+git add src/ProQualEx.ModelSaver.Core tests/ProQualEx.ModelSaver.Core.Tests
 git commit -m "Add HiddenFieldDiffer, the public entry point tying the algorithm together"
 ```
 
 ---
 
-### Task 7: `HiddenFieldRenderer` + Core packaging metadata (completes `ModelSaver.Core`)
+### Task 7: `HiddenFieldRenderer` + Core packaging metadata (completes `ProQualEx.ModelSaver.Core`)
 
 **Files:**
-- Create: `src/ModelSaver.Core/HiddenFieldRenderer.cs`
-- Modify: `src/ModelSaver.Core/ModelSaver.Core.csproj`
-- Test: `tests/ModelSaver.Core.Tests/HiddenFieldRendererTests.cs`
+- Create: `src/ProQualEx.ModelSaver.Core/HiddenFieldRenderer.cs`
+- Modify: `src/ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj`
+- Test: `tests/ProQualEx.ModelSaver.Core.Tests/HiddenFieldRendererTests.cs`
 
 **Interfaces:**
-- Consumes: `ModelSaver.PersistField` (Task 6).
-- Produces: `ModelSaver.HiddenFieldRenderer.Render(IEnumerable<PersistField> fields) : string`, which both adapters (Tasks 8 and 9) call to turn `HiddenFieldDiffer`'s output into HTML.
+- Consumes: `ProQualEx.ModelSaver.PersistField` (Task 6).
+- Produces: `ProQualEx.ModelSaver.HiddenFieldRenderer.Render(IEnumerable<PersistField> fields) : string`, which both adapters (Tasks 8 and 9) call to turn `HiddenFieldDiffer`'s output into HTML.
 
 - [ ] **Step 1: Write the failing tests**
 
-Create `tests/ModelSaver.Core.Tests/HiddenFieldRendererTests.cs`:
+Create `tests/ProQualEx.ModelSaver.Core.Tests/HiddenFieldRendererTests.cs`:
 
 ```csharp
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using ModelSaver;
+using ProQualEx.ModelSaver;
 
-namespace ModelSaver.Core.Tests;
+namespace ProQualEx.ModelSaver.Core.Tests;
 
 public class HiddenFieldRendererTests
 {
@@ -1096,12 +1096,12 @@ public class HiddenFieldRendererTests
 
 - [ ] **Step 2: Run tests, verify they fail to compile**
 
-Run: `dotnet test tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
 Expected: FAIL — `HiddenFieldRenderer` does not exist yet.
 
 - [ ] **Step 3: Implement `HiddenFieldRenderer`**
 
-Create `src/ModelSaver.Core/HiddenFieldRenderer.cs`:
+Create `src/ProQualEx.ModelSaver.Core/HiddenFieldRenderer.cs`:
 
 ```csharp
 using System;
@@ -1109,7 +1109,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace ModelSaver;
+namespace ProQualEx.ModelSaver;
 
 public static class HiddenFieldRenderer
 {
@@ -1142,54 +1142,54 @@ public static class HiddenFieldRenderer
 
 - [ ] **Step 4: Run tests, verify PASS**
 
-Run: `dotnet test tests/ModelSaver.Core.Tests/ModelSaver.Core.Tests.csproj`
-Expected: all tests pass (33 total so far). `ModelSaver.Core`'s v1 public API is now complete: `PersistOnPostbackAttribute`, `PersistField`, `HiddenFieldDiffer`, `HiddenFieldRenderer`.
+Run: `dotnet test tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj`
+Expected: all tests pass (33 total so far). `ProQualEx.ModelSaver.Core`'s v1 public API is now complete: `PersistOnPostbackAttribute`, `PersistField`, `HiddenFieldDiffer`, `HiddenFieldRenderer`.
 
 - [ ] **Step 5: Add NuGet packaging metadata**
 
-In `src/ModelSaver.Core/ModelSaver.Core.csproj`, add inside the existing `<PropertyGroup>`:
+In `src/ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj`, add inside the existing `<PropertyGroup>`:
 
 ```xml
-    <PackageId>ModelSaver.Core</PackageId>
+    <PackageId>ProQualEx.ModelSaver.Core</PackageId>
     <Version>0.1.0</Version>
-    <Description>Framework-agnostic core for ModelSaver: attribute-driven automatic hidden-field persistence for ASP.NET MVC forms.</Description>
+    <Description>Framework-agnostic core for ProQualEx.ModelSaver: attribute-driven automatic hidden-field persistence for ASP.NET MVC forms.</Description>
 ```
 
 - [ ] **Step 6: Verify the package still builds**
 
-Run: `dotnet build src/ModelSaver.Core/ModelSaver.Core.csproj`
+Run: `dotnet build src/ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj`
 Expected: `Build succeeded.`
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/ModelSaver.Core tests/ModelSaver.Core.Tests
-git commit -m "Add HiddenFieldRenderer and packaging metadata, completing ModelSaver.Core v1"
+git add src/ProQualEx.ModelSaver.Core tests/ProQualEx.ModelSaver.Core.Tests
+git commit -m "Add HiddenFieldRenderer and packaging metadata, completing ProQualEx.ModelSaver.Core v1"
 ```
 
 ---
 
-### Task 8: `ModelSaver.AspNetCore` adapter (Tag Helper)
+### Task 8: `ProQualEx.ModelSaver.AspNetCore` adapter (Tag Helper)
 
 **Files:**
-- Create: `src/ModelSaver.AspNetCore/ModelSaver.AspNetCore.csproj`
-- Create: `src/ModelSaver.AspNetCore/PersistOnPostbackTagHelper.cs`
-- Create: `tests/ModelSaver.AspNetCore.Tests/ModelSaver.AspNetCore.Tests.csproj`
-- Test: `tests/ModelSaver.AspNetCore.Tests/PersistOnPostbackTagHelperTests.cs`
-- Modify: `ModelSaver.sln`
+- Create: `src/ProQualEx.ModelSaver.AspNetCore/ProQualEx.ModelSaver.AspNetCore.csproj`
+- Create: `src/ProQualEx.ModelSaver.AspNetCore/PersistOnPostbackTagHelper.cs`
+- Create: `tests/ProQualEx.ModelSaver.AspNetCore.Tests/ProQualEx.ModelSaver.AspNetCore.Tests.csproj`
+- Test: `tests/ProQualEx.ModelSaver.AspNetCore.Tests/PersistOnPostbackTagHelperTests.cs`
+- Modify: `ProQualEx.ModelSaver.sln`
 
 **Interfaces:**
-- Consumes: `ModelSaver.HiddenFieldDiffer.GetMissingFields` and `ModelSaver.HiddenFieldRenderer.Render` (Task 6, Task 7).
-- Produces: `ModelSaver.AspNetCore.PersistOnPostbackTagHelper`, a public Tag Helper — no later task depends on it, it's a leaf adapter.
+- Consumes: `ProQualEx.ModelSaver.HiddenFieldDiffer.GetMissingFields` and `ProQualEx.ModelSaver.HiddenFieldRenderer.Render` (Task 6, Task 7).
+- Produces: `ProQualEx.ModelSaver.AspNetCore.PersistOnPostbackTagHelper`, a public Tag Helper — no later task depends on it, it's a leaf adapter.
 
-- [ ] **Step 1: Scaffold `ModelSaver.AspNetCore`**
+- [ ] **Step 1: Scaffold `ProQualEx.ModelSaver.AspNetCore`**
 
 ```bash
-dotnet new classlib -n ModelSaver.AspNetCore -o src/ModelSaver.AspNetCore -f net10.0
-rm src/ModelSaver.AspNetCore/Class1.cs
+dotnet new classlib -n ProQualEx.ModelSaver.AspNetCore -o src/ProQualEx.ModelSaver.AspNetCore -f net10.0
+rm src/ProQualEx.ModelSaver.AspNetCore/Class1.cs
 ```
 
-Replace `src/ModelSaver.AspNetCore/ModelSaver.AspNetCore.csproj` with:
+Replace `src/ProQualEx.ModelSaver.AspNetCore/ProQualEx.ModelSaver.AspNetCore.csproj` with:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Razor">
@@ -1199,9 +1199,9 @@ Replace `src/ModelSaver.AspNetCore/ModelSaver.AspNetCore.csproj` with:
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <PackageId>ModelSaver.AspNetCore</PackageId>
+    <PackageId>ProQualEx.ModelSaver.AspNetCore</PackageId>
     <Version>0.1.0</Version>
-    <Description>ASP.NET Core Tag Helper adapter for ModelSaver: automatic hidden-field persistence for &lt;form&gt; elements.</Description>
+    <Description>ASP.NET Core Tag Helper adapter for ProQualEx.ModelSaver: automatic hidden-field persistence for &lt;form&gt; elements.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -1209,24 +1209,24 @@ Replace `src/ModelSaver.AspNetCore/ModelSaver.AspNetCore.csproj` with:
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../ModelSaver.Core/ModelSaver.Core.csproj" />
+    <ProjectReference Include="../ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj" />
   </ItemGroup>
 
 </Project>
 ```
 
 ```bash
-dotnet sln ModelSaver.sln add src/ModelSaver.AspNetCore/ModelSaver.AspNetCore.csproj
+dotnet sln ProQualEx.ModelSaver.sln add src/ProQualEx.ModelSaver.AspNetCore/ProQualEx.ModelSaver.AspNetCore.csproj
 ```
 
-- [ ] **Step 2: Scaffold `ModelSaver.AspNetCore.Tests`**
+- [ ] **Step 2: Scaffold `ProQualEx.ModelSaver.AspNetCore.Tests`**
 
 ```bash
-dotnet new xunit -n ModelSaver.AspNetCore.Tests -o tests/ModelSaver.AspNetCore.Tests -f net10.0
-rm tests/ModelSaver.AspNetCore.Tests/UnitTest1.cs
+dotnet new xunit -n ProQualEx.ModelSaver.AspNetCore.Tests -o tests/ProQualEx.ModelSaver.AspNetCore.Tests -f net10.0
+rm tests/ProQualEx.ModelSaver.AspNetCore.Tests/UnitTest1.cs
 ```
 
-Replace `tests/ModelSaver.AspNetCore.Tests/ModelSaver.AspNetCore.Tests.csproj` with:
+Replace `tests/ProQualEx.ModelSaver.AspNetCore.Tests/ProQualEx.ModelSaver.AspNetCore.Tests.csproj` with:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Razor">
@@ -1251,20 +1251,20 @@ Replace `tests/ModelSaver.AspNetCore.Tests/ModelSaver.AspNetCore.Tests.csproj` w
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/ModelSaver.Core/ModelSaver.Core.csproj" />
-    <ProjectReference Include="../../src/ModelSaver.AspNetCore/ModelSaver.AspNetCore.csproj" />
+    <ProjectReference Include="../../src/ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj" />
+    <ProjectReference Include="../../src/ProQualEx.ModelSaver.AspNetCore/ProQualEx.ModelSaver.AspNetCore.csproj" />
   </ItemGroup>
 
 </Project>
 ```
 
 ```bash
-dotnet sln ModelSaver.sln add tests/ModelSaver.AspNetCore.Tests/ModelSaver.AspNetCore.Tests.csproj
+dotnet sln ProQualEx.ModelSaver.sln add tests/ProQualEx.ModelSaver.AspNetCore.Tests/ProQualEx.ModelSaver.AspNetCore.Tests.csproj
 ```
 
 - [ ] **Step 3: Write the failing tests**
 
-Create `tests/ModelSaver.AspNetCore.Tests/PersistOnPostbackTagHelperTests.cs`:
+Create `tests/ProQualEx.ModelSaver.AspNetCore.Tests/PersistOnPostbackTagHelperTests.cs`:
 
 ```csharp
 using System;
@@ -1272,10 +1272,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using ModelSaver;
-using ModelSaver.AspNetCore;
+using ProQualEx.ModelSaver;
+using ProQualEx.ModelSaver.AspNetCore;
 
-namespace ModelSaver.AspNetCore.Tests;
+namespace ProQualEx.ModelSaver.AspNetCore.Tests;
 
 public class PersistOnPostbackTagHelperTests
 {
@@ -1344,19 +1344,19 @@ public class PersistOnPostbackTagHelperTests
 
 - [ ] **Step 4: Run tests, verify they fail to compile**
 
-Run: `dotnet test tests/ModelSaver.AspNetCore.Tests/ModelSaver.AspNetCore.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.AspNetCore.Tests/ProQualEx.ModelSaver.AspNetCore.Tests.csproj`
 Expected: FAIL — `PersistOnPostbackTagHelper` does not exist yet.
 
 - [ ] **Step 5: Implement `PersistOnPostbackTagHelper`**
 
-Create `src/ModelSaver.AspNetCore/PersistOnPostbackTagHelper.cs`:
+Create `src/ProQualEx.ModelSaver.AspNetCore/PersistOnPostbackTagHelper.cs`:
 
 ```csharp
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using ModelSaver;
+using ProQualEx.ModelSaver;
 
-namespace ModelSaver.AspNetCore;
+namespace ProQualEx.ModelSaver.AspNetCore;
 
 [HtmlTargetElement("form", Attributes = "asp-persist-model")]
 public class PersistOnPostbackTagHelper : TagHelper
@@ -1389,42 +1389,42 @@ Usage in a real view would look like: `<form asp-action="Save" asp-persist-model
 
 - [ ] **Step 6: Run tests, verify PASS**
 
-Run: `dotnet test tests/ModelSaver.AspNetCore.Tests/ModelSaver.AspNetCore.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.AspNetCore.Tests/ProQualEx.ModelSaver.AspNetCore.Tests.csproj`
 Expected: all 3 tests pass.
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add ModelSaver.sln src/ModelSaver.AspNetCore tests/ModelSaver.AspNetCore.Tests
-git commit -m "Add ModelSaver.AspNetCore Tag Helper adapter"
+git add ProQualEx.ModelSaver.sln src/ProQualEx.ModelSaver.AspNetCore tests/ProQualEx.ModelSaver.AspNetCore.Tests
+git commit -m "Add ProQualEx.ModelSaver.AspNetCore Tag Helper adapter"
 ```
 
 ---
 
-### Task 9: `ModelSaver.Mvc5` adapter (`BeginPersistedForm`)
+### Task 9: `ProQualEx.ModelSaver.Mvc5` adapter (`BeginPersistedForm`)
 
 **Files:**
-- Create: `src/ModelSaver.Mvc5/ModelSaver.Mvc5.csproj`
-- Create: `src/ModelSaver.Mvc5/AssemblyInfo.cs`
-- Create: `src/ModelSaver.Mvc5/Internal/FormHtmlSplicer.cs`
-- Create: `src/ModelSaver.Mvc5/Internal/PersistedFormScope.cs`
-- Create: `src/ModelSaver.Mvc5/PersistedFormExtensions.cs`
-- Create: `tests/ModelSaver.Mvc5.Tests/ModelSaver.Mvc5.Tests.csproj`
-- Test: `tests/ModelSaver.Mvc5.Tests/FormHtmlSplicerTests.cs`
-- Modify: `ModelSaver.sln`
+- Create: `src/ProQualEx.ModelSaver.Mvc5/ProQualEx.ModelSaver.Mvc5.csproj`
+- Create: `src/ProQualEx.ModelSaver.Mvc5/AssemblyInfo.cs`
+- Create: `src/ProQualEx.ModelSaver.Mvc5/Internal/FormHtmlSplicer.cs`
+- Create: `src/ProQualEx.ModelSaver.Mvc5/Internal/PersistedFormScope.cs`
+- Create: `src/ProQualEx.ModelSaver.Mvc5/PersistedFormExtensions.cs`
+- Create: `tests/ProQualEx.ModelSaver.Mvc5.Tests/ProQualEx.ModelSaver.Mvc5.Tests.csproj`
+- Test: `tests/ProQualEx.ModelSaver.Mvc5.Tests/FormHtmlSplicerTests.cs`
+- Modify: `ProQualEx.ModelSaver.sln`
 
 **Interfaces:**
-- Consumes: `ModelSaver.HiddenFieldDiffer.GetMissingFields` and `ModelSaver.HiddenFieldRenderer.Render` (Task 6, Task 7).
-- Produces: `ModelSaver.Mvc5.PersistedFormExtensions.BeginPersistedForm(this HtmlHelper, object model, string actionName, string controllerName, FormMethod method = FormMethod.Post, object? htmlAttributes = null) : IDisposable` — no later task depends on it, it's a leaf adapter.
+- Consumes: `ProQualEx.ModelSaver.HiddenFieldDiffer.GetMissingFields` and `ProQualEx.ModelSaver.HiddenFieldRenderer.Render` (Task 6, Task 7).
+- Produces: `ProQualEx.ModelSaver.Mvc5.PersistedFormExtensions.BeginPersistedForm(this HtmlHelper, object model, string actionName, string controllerName, FormMethod method = FormMethod.Post, object? htmlAttributes = null) : IDisposable` — no later task depends on it, it's a leaf adapter.
 
-- [ ] **Step 1: Scaffold `ModelSaver.Mvc5`**
+- [ ] **Step 1: Scaffold `ProQualEx.ModelSaver.Mvc5`**
 
 ```bash
-dotnet new classlib -n ModelSaver.Mvc5 -o src/ModelSaver.Mvc5 -f netstandard2.0
-rm src/ModelSaver.Mvc5/Class1.cs
+dotnet new classlib -n ProQualEx.ModelSaver.Mvc5 -o src/ProQualEx.ModelSaver.Mvc5 -f netstandard2.0
+rm src/ProQualEx.ModelSaver.Mvc5/Class1.cs
 ```
 
-Replace `src/ModelSaver.Mvc5/ModelSaver.Mvc5.csproj` with (note: `TargetFramework` is `net472`, not what `dotnet new` generated — the `classlib` template doesn't offer `net472` as a `-f` value, so it's created as `netstandard2.0` and retargeted here):
+Replace `src/ProQualEx.ModelSaver.Mvc5/ProQualEx.ModelSaver.Mvc5.csproj` with (note: `TargetFramework` is `net472`, not what `dotnet new` generated — the `classlib` template doesn't offer `net472` as a `-f` value, so it's created as `netstandard2.0` and retargeted here):
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
@@ -1434,9 +1434,9 @@ Replace `src/ModelSaver.Mvc5/ModelSaver.Mvc5.csproj` with (note: `TargetFramewor
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <PackageId>ModelSaver.Mvc5</PackageId>
+    <PackageId>ProQualEx.ModelSaver.Mvc5</PackageId>
     <Version>0.1.0</Version>
-    <Description>ASP.NET MVC 5 adapter for ModelSaver: automatic hidden-field persistence for Html.BeginForm.</Description>
+    <Description>ASP.NET MVC 5 adapter for ProQualEx.ModelSaver: automatic hidden-field persistence for Html.BeginForm.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -1444,34 +1444,34 @@ Replace `src/ModelSaver.Mvc5/ModelSaver.Mvc5.csproj` with (note: `TargetFramewor
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../ModelSaver.Core/ModelSaver.Core.csproj" />
+    <ProjectReference Include="../ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj" />
   </ItemGroup>
 
 </Project>
 ```
 
 ```bash
-dotnet sln ModelSaver.sln add src/ModelSaver.Mvc5/ModelSaver.Mvc5.csproj
+dotnet sln ProQualEx.ModelSaver.sln add src/ProQualEx.ModelSaver.Mvc5/ProQualEx.ModelSaver.Mvc5.csproj
 ```
 
 - [ ] **Step 2: Wire up `InternalsVisibleTo`**
 
-Create `src/ModelSaver.Mvc5/AssemblyInfo.cs`:
+Create `src/ProQualEx.ModelSaver.Mvc5/AssemblyInfo.cs`:
 
 ```csharp
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("ModelSaver.Mvc5.Tests")]
+[assembly: InternalsVisibleTo("ProQualEx.ModelSaver.Mvc5.Tests")]
 ```
 
-- [ ] **Step 3: Scaffold `ModelSaver.Mvc5.Tests`**
+- [ ] **Step 3: Scaffold `ProQualEx.ModelSaver.Mvc5.Tests`**
 
 ```bash
-dotnet new xunit -n ModelSaver.Mvc5.Tests -o tests/ModelSaver.Mvc5.Tests -f netstandard2.0
-rm tests/ModelSaver.Mvc5.Tests/UnitTest1.cs
+dotnet new xunit -n ProQualEx.ModelSaver.Mvc5.Tests -o tests/ProQualEx.ModelSaver.Mvc5.Tests -f netstandard2.0
+rm tests/ProQualEx.ModelSaver.Mvc5.Tests/UnitTest1.cs
 ```
 
-Replace `tests/ModelSaver.Mvc5.Tests/ModelSaver.Mvc5.Tests.csproj` with (again retargeted to `net472` after scaffolding):
+Replace `tests/ProQualEx.ModelSaver.Mvc5.Tests/ProQualEx.ModelSaver.Mvc5.Tests.csproj` with (again retargeted to `net472` after scaffolding):
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
@@ -1495,29 +1495,29 @@ Replace `tests/ModelSaver.Mvc5.Tests/ModelSaver.Mvc5.Tests.csproj` with (again r
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/ModelSaver.Core/ModelSaver.Core.csproj" />
-    <ProjectReference Include="../../src/ModelSaver.Mvc5/ModelSaver.Mvc5.csproj" />
+    <ProjectReference Include="../../src/ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj" />
+    <ProjectReference Include="../../src/ProQualEx.ModelSaver.Mvc5/ProQualEx.ModelSaver.Mvc5.csproj" />
   </ItemGroup>
 
 </Project>
 ```
 
 ```bash
-dotnet sln ModelSaver.sln add tests/ModelSaver.Mvc5.Tests/ModelSaver.Mvc5.Tests.csproj
+dotnet sln ProQualEx.ModelSaver.sln add tests/ProQualEx.ModelSaver.Mvc5.Tests/ProQualEx.ModelSaver.Mvc5.Tests.csproj
 ```
 
 - [ ] **Step 4: Write the failing tests**
 
 Per the spec, `PersistedFormExtensions.BeginPersistedForm` itself needs a real `ViewContext`/`HttpContextBase` to exercise, which isn't worth mocking — the novel logic is the splice, which is exercised here as a plain, framework-independent function.
 
-Create `tests/ModelSaver.Mvc5.Tests/FormHtmlSplicerTests.cs`:
+Create `tests/ProQualEx.ModelSaver.Mvc5.Tests/FormHtmlSplicerTests.cs`:
 
 ```csharp
 using System;
-using ModelSaver;
-using ModelSaver.Mvc5.Internal;
+using ProQualEx.ModelSaver;
+using ProQualEx.ModelSaver.Mvc5.Internal;
 
-namespace ModelSaver.Mvc5.Tests;
+namespace ProQualEx.ModelSaver.Mvc5.Tests;
 
 public class FormHtmlSplicerTests
 {
@@ -1570,19 +1570,19 @@ public class FormHtmlSplicerTests
 
 - [ ] **Step 5: Run tests, verify they fail to compile**
 
-Run: `dotnet test tests/ModelSaver.Mvc5.Tests/ModelSaver.Mvc5.Tests.csproj`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Mvc5.Tests/ProQualEx.ModelSaver.Mvc5.Tests.csproj`
 
-Expected: FAIL — `FormHtmlSplicer` does not exist yet. If this instead fails with `Could not find 'mono' host`, Mono still isn't installed; fall back to `dotnet build tests/ModelSaver.Mvc5.Tests/ModelSaver.Mvc5.Tests.csproj` to confirm the compile-time failure instead, and continue using `dotnet build` for verification through the rest of this task, noting clearly that tests were compile-checked only, not executed.
+Expected: FAIL — `FormHtmlSplicer` does not exist yet. If this instead fails with `Could not find 'mono' host`, Mono still isn't installed; fall back to `dotnet build tests/ProQualEx.ModelSaver.Mvc5.Tests/ProQualEx.ModelSaver.Mvc5.Tests.csproj` to confirm the compile-time failure instead, and continue using `dotnet build` for verification through the rest of this task, noting clearly that tests were compile-checked only, not executed.
 
 - [ ] **Step 6: Implement `FormHtmlSplicer`**
 
-Create `src/ModelSaver.Mvc5/Internal/FormHtmlSplicer.cs`:
+Create `src/ProQualEx.ModelSaver.Mvc5/Internal/FormHtmlSplicer.cs`:
 
 ```csharp
 using System;
-using ModelSaver;
+using ProQualEx.ModelSaver;
 
-namespace ModelSaver.Mvc5.Internal;
+namespace ProQualEx.ModelSaver.Mvc5.Internal;
 
 internal static class FormHtmlSplicer
 {
@@ -1607,19 +1607,19 @@ internal static class FormHtmlSplicer
 
 - [ ] **Step 7: Run tests, verify PASS (or build, per the Mono fallback)**
 
-Run: `dotnet test tests/ModelSaver.Mvc5.Tests/ModelSaver.Mvc5.Tests.csproj`
-Expected: all 3 tests pass. If Mono is unavailable, run `dotnet build tests/ModelSaver.Mvc5.Tests/ModelSaver.Mvc5.Tests.csproj` instead and expect `Build succeeded.`
+Run: `dotnet test tests/ProQualEx.ModelSaver.Mvc5.Tests/ProQualEx.ModelSaver.Mvc5.Tests.csproj`
+Expected: all 3 tests pass. If Mono is unavailable, run `dotnet build tests/ProQualEx.ModelSaver.Mvc5.Tests/ProQualEx.ModelSaver.Mvc5.Tests.csproj` instead and expect `Build succeeded.`
 
 - [ ] **Step 8: Implement `PersistedFormScope`**
 
-Create `src/ModelSaver.Mvc5/Internal/PersistedFormScope.cs`:
+Create `src/ProQualEx.ModelSaver.Mvc5/Internal/PersistedFormScope.cs`:
 
 ```csharp
 using System;
 using System.IO;
 using System.Web.Mvc;
 
-namespace ModelSaver.Mvc5.Internal;
+namespace ProQualEx.ModelSaver.Mvc5.Internal;
 
 internal sealed class PersistedFormScope : IDisposable
 {
@@ -1666,15 +1666,15 @@ internal sealed class PersistedFormScope : IDisposable
 
 - [ ] **Step 9: Implement `PersistedFormExtensions`**
 
-Create `src/ModelSaver.Mvc5/PersistedFormExtensions.cs`:
+Create `src/ProQualEx.ModelSaver.Mvc5/PersistedFormExtensions.cs`:
 
 ```csharp
 using System;
 using System.IO;
 using System.Web.Mvc;
-using ModelSaver.Mvc5.Internal;
+using ProQualEx.ModelSaver.Mvc5.Internal;
 
-namespace ModelSaver.Mvc5;
+namespace ProQualEx.ModelSaver.Mvc5;
 
 public static class PersistedFormExtensions
 {
@@ -1720,14 +1720,14 @@ Usage in a real view would look like:
 
 - [ ] **Step 10: Verify the whole solution builds**
 
-Run: `dotnet build ModelSaver.sln`
-Expected: `Build succeeded.` for all five projects (`ModelSaver.Core`, `ModelSaver.Core.Tests`, `ModelSaver.AspNetCore`, `ModelSaver.AspNetCore.Tests`, `ModelSaver.Mvc5`, `ModelSaver.Mvc5.Tests`).
+Run: `dotnet build ProQualEx.ModelSaver.sln`
+Expected: `Build succeeded.` for all five projects (`ProQualEx.ModelSaver.Core`, `ProQualEx.ModelSaver.Core.Tests`, `ProQualEx.ModelSaver.AspNetCore`, `ProQualEx.ModelSaver.AspNetCore.Tests`, `ProQualEx.ModelSaver.Mvc5`, `ProQualEx.ModelSaver.Mvc5.Tests`).
 
 - [ ] **Step 11: Commit**
 
 ```bash
-git add ModelSaver.sln src/ModelSaver.Mvc5 tests/ModelSaver.Mvc5.Tests
-git commit -m "Add ModelSaver.Mvc5 BeginPersistedForm adapter"
+git add ProQualEx.ModelSaver.sln src/ProQualEx.ModelSaver.Mvc5 tests/ProQualEx.ModelSaver.Mvc5.Tests
+git commit -m "Add ProQualEx.ModelSaver.Mvc5 BeginPersistedForm adapter"
 ```
 
 ---
@@ -1738,6 +1738,6 @@ git commit -m "Add ModelSaver.Mvc5 BeginPersistedForm adapter"
 - Core diff algorithm (eligible paths, name scanning excluding submit/button/reset/image, diff, `CurrentCulture` value formatting, id-from-name): Tasks 3–7. ✅
 - ASP.NET Core Tag Helper adapter: Task 8. ✅
 - MVC5 `BeginPersistedForm` adapter with buffer-diff-splice: Task 9. ✅
-- Package layout (`ModelSaver.Core`/`ModelSaver.Mvc5`/`ModelSaver.AspNetCore`, `src`/`tests` split): Task 1, 8, 9. ✅
+- Package layout (`ProQualEx.ModelSaver.Core`/`ProQualEx.ModelSaver.Mvc5`/`ProQualEx.ModelSaver.AspNetCore`, `src`/`tests` split): Task 1, 8, 9. ✅
 - Testing strategy (Core pure xUnit, AspNetCore Tag-Helper-context tests, Mvc5 splice-only tests): Tasks 1–9 throughout. ✅
 - Collections/tamper-protection: explicitly out of scope per spec — no task needed. ✅
