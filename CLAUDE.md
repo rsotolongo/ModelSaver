@@ -152,11 +152,34 @@ nuget.org profile name — no `NUGET_API_KEY` secret exists or is needed.
 
 After a successful push, the job re-syncs to `origin/main` (not whatever
 detached commit the tag checked out) and commits the released version into
-all three `<Version>` tags with `git push origin main`, using the default
-`GITHUB_TOKEN` (`permissions: contents: write`). That commit's message ends
-in `[skip ci]` and won't retrigger this workflow itself (it only triggers on
+all three `<Version>` tags. That commit's message ends in `[skip ci]` and
+won't retrigger this workflow itself (it only triggers on
 tags/`workflow_dispatch`), but it is a direct, unreviewed push straight to
 `main` — know that before changing this step.
+
+`main` is protected by a repository **ruleset** (not classic branch
+protection — see §below), requiring a pull request and bypassed only for
+the `Repository admin` role. The default `GITHUB_TOKEN` authenticates as
+the `github-actions` app, not that role, so it can't push here: this step
+instead pushes with `secrets.RELEASE_PAT`, a PAT belonging to the repo
+admin (`rsotolongo`), embedded directly in the push URL
+(`https://x-access-token:$env:RELEASE_PAT@github.com/...`) rather than via
+`actions/checkout`'s persisted credentials, so only this one push uses the
+elevated token. If that secret is ever missing/expired, this step — and
+only this step — fails; the actual NuGet publish above it has already
+succeeded.
+
+### Branch protection
+
+`main` has a ruleset (Settings → Rules → Rulesets → "Protect main"), not
+classic branch protection: requires a PR + 1 approval, blocks force-pushes
+and deletions, bypass list = `Repository admin` role only (`actor_id: 5`,
+confirmed empirically — GitHub doesn't document the numeric role IDs).
+Outside contributors can only land changes via a reviewed PR; the repo
+admin (and the release workflow's bump step, via `RELEASE_PAT`) can still
+push straight to `main`. Secret scanning + push protection and Dependabot
+security updates are also enabled at the repo level (`Settings → Code
+security`) — both free for a public repo.
 
 Shared package metadata (`Authors`, `PackageLicenseExpression=MIT`,
 `RepositoryUrl`, `PackageProjectUrl`) lives once in the root

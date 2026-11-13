@@ -11,6 +11,11 @@ name: Publish NuGet packages
 # Requires a Trusted Publishing policy on nuget.org matching this repo + workflow file
 # (see https://learn.microsoft.com/nuget/nuget-org/trusted-publishing), and a
 # NUGET_USER repository secret set to the nuget.org profile name (not the email).
+#
+# main is protected by a ruleset requiring a pull request (bypassed only for the admin
+# role), so the version-bump commit can't push with the default GITHUB_TOKEN - it needs a
+# RELEASE_PAT repository secret: a PAT belonging to the repo admin, scoped to this repo's
+# Contents: Read and write.
 on:
   push:
     tags:
@@ -103,9 +108,15 @@ jobs:
         if: success()
         env:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
         # A tag push checks out a detached commit, and main may have moved since the tag
         # was cut, so re-sync to origin/main's tip rather than committing from that detached
         # HEAD or an out-of-date local branch.
+        #
+        # main is protected by a ruleset requiring a pull request, bypassed only for the
+        # Repository admin role. The default GITHUB_TOKEN pushes as the github-actions app,
+        # not as that role, so it would be rejected here - push with a PAT belonging to the
+        # admin account instead, which the bypass does cover.
         run: |
           git fetch origin main
           git checkout -B main origin/main
@@ -131,5 +142,5 @@ jobs:
           }
           else {
             git commit -m "Bump package Version to $env:PACKAGE_VERSION [skip ci]"
-            git push origin main
+            git push "https://x-access-token:$env:RELEASE_PAT@github.com/rsotolongo/ModelSaver.git" HEAD:main
           }
