@@ -7,6 +7,7 @@
     <Description>ASP.NET Core Tag Helper adapter for ProQualEx.ModelSaver: automatic hidden-field persistence for &lt;form&gt; elements.</Description>
     <PackageTags>aspnetcore;tag-helper;forms;hidden-fields;model-binding</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +20,7 @@
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
