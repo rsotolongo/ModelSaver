@@ -91,4 +91,9 @@ jobs:
       - name: Push to NuGet.org
         env:
           NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
-        run: dotnet nuget push "artifacts/*.nupkg" --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+        # dotnet nuget push doesn't reliably expand a "dir/*.nupkg" wildcard on Windows,
+        # so enumerate the packed files instead of passing a glob straight to it.
+        run: |
+          Get-ChildItem -Path artifacts -Filter *.nupkg | ForEach-Object {
+            dotnet nuget push $_.FullName --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+          }
