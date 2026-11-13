@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
+    <header class="site-header">
+        <div class="inner">
+            <a class="brand" asp-controller="Order" asp-action="Edit"><span class="brand-mark">M</span>ModelSaver</a>
+            <span class="framework">ASP.NET Core</span>
+        </div>
+    </header>
     <main>
         @RenderBody()
     </main>

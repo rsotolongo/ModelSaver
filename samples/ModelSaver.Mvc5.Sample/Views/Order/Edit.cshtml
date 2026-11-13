@@ -4,65 +4,122 @@
     ViewBag.Title = "Edit Order";
 }
 
-<h1>Edit Order (ASP.NET MVC 5)</h1>
-
-<h2>Model as it arrives at the client</h2>
-
-<dl>
-    <dt>Id</dt>
-    <dd>@Model.Id</dd>
-
-    <dt>CustomerId</dt>
-    <dd>@Model.CustomerId</dd>
-
-    <dt>CreatedAtUtc</dt>
-    <dd>@Model.CreatedAtUtc</dd>
-
-    <dt>Total</dt>
-    <dd>@Model.Total</dd>
-
-    <dt>CustomerName</dt>
-    <dd>@Model.CustomerName</dd>
-
-    <dt>ShippingAddress.Street</dt>
-    <dd>@Model.ShippingAddress.Street</dd>
-
-    <dt>ShippingAddress.City</dt>
-    <dd>@Model.ShippingAddress.City</dd>
-
-    <dt>ShippingAddress.PostalCode</dt>
-    <dd>"@Model.ShippingAddress.PostalCode"</dd>
-
-    <dt>ShippingAddress.Location.Latitude</dt>
-    <dd>@Model.ShippingAddress.Location.Latitude</dd>
-
-    <dt>ShippingAddress.Location.Longitude</dt>
-    <dd>@Model.ShippingAddress.Location.Longitude</dd>
-
-    <dt>ShippingAddress.DeliveryInstructions (marked <code>[PersistOnPostback(false)]</code>)</dt>
-    <dd>"@Model.ShippingAddress.DeliveryInstructions"</dd>
-
-    <dt>DisplayOnlySummary (marked <code>[PersistOnPostback(false)]</code>)</dt>
-    <dd>"@Model.DisplayOnlySummary"</dd>
-</dl>
-
-<p>
-    Only <strong>Customer name</strong> and <strong>City</strong> are editable
-    fields in the form below. Every other value listed above - including the
-    nested <code>ShippingAddress.*</code> and
-    <code>ShippingAddress.Location.*</code> properties - is not on the form;
-    <code>Html.BeginPersistedForm</code> adds them as hidden fields because the model types are marked
-    <code>[PersistOnPostback]</code>. Properties opted out with
-    <code>[PersistOnPostback(false)]</code> are not sent back.
+<h1>Edit order</h1>
+<p class="lead">
+    Only <strong>Customer name</strong> and <strong>City</strong> are inputs.
+    Every other value below is re-sent as a hidden field by <code>Html.BeginPersistedForm</code>,
+    nested properties included, because the model types are marked
+    <code>[PersistOnPostback]</code>.
 </p>
 
-@using (Html.BeginPersistedForm(Model, "Save", "Order"))
-{
-    @Html.LabelFor(m => m.CustomerName, "Customer name")
-    @Html.TextBoxFor(m => m.CustomerName)
+<ul class="legend">
+    <li><span class="tag tag-edit">editable</span> shown as an input in the form</li>
+    <li><span class="tag tag-hidden">hidden field</span> added automatically by ModelSaver</li>
+    <li><span class="tag tag-excluded">not sent back</span> opted out with <code>[PersistOnPostback(false)]</code></li>
+</ul>
 
-    @Html.LabelFor(m => m.ShippingAddress.City, "City")
-    @Html.TextBoxFor(m => m.ShippingAddress.City)
+<h2>Model as it arrives at the client</h2>
+<div class="grid">
+<section class="card">
+    <h2>Order</h2>
+    <dl class="kv">
+        <div>
+            <dt>Id</dt>
+            <dd>@Model.Id</dd>
+            <span class="tag tag-hidden">hidden field</span>
+        </div>
+        <div>
+            <dt>CustomerId</dt>
+            <dd>@Model.CustomerId</dd>
+            <span class="tag tag-hidden">hidden field</span>
+        </div>
+        <div>
+            <dt>CreatedAtUtc</dt>
+            <dd>@Model.CreatedAtUtc</dd>
+            <span class="tag tag-hidden">hidden field</span>
+        </div>
+        <div>
+            <dt>Total</dt>
+            <dd>@Model.Total</dd>
+            <span class="tag tag-hidden">hidden field</span>
+        </div>
+    </dl>
+</section>
 
-    <button type="submit">Save</button>
-}
+<section class="card">
+    <h2>Customer</h2>
+    <dl class="kv">
+        <div>
+            <dt>CustomerName</dt>
+            <dd>@Model.CustomerName</dd>
+            <span class="tag tag-edit">editable</span>
+        </div>
+        <div>
+            <dt>DisplayOnlySummary</dt>
+            <dd>"@Model.DisplayOnlySummary"</dd>
+            <span class="tag tag-excluded">not sent back</span>
+        </div>
+    </dl>
+</section>
+
+<section class="card">
+    <h2>ShippingAddress</h2>
+    <dl class="kv">
+        <div>
+            <dt>Street</dt>
+            <dd>@Model.ShippingAddress.Street</dd>
+            <span class="tag tag-hidden">hidden field</span>
+        </div>
+        <div>
+            <dt>City</dt>
+            <dd>@Model.ShippingAddress.City</dd>
+            <span class="tag tag-edit">editable</span>
+        </div>
+        <div>
+            <dt>PostalCode</dt>
+            <dd>@Model.ShippingAddress.PostalCode</dd>
+            <span class="tag tag-hidden">hidden field</span>
+        </div>
+        <div>
+            <dt>DeliveryInstructions</dt>
+            <dd>"@Model.ShippingAddress.DeliveryInstructions"</dd>
+            <span class="tag tag-excluded">not sent back</span>
+        </div>
+    </dl>
+</section>
+
+<section class="card">
+    <h2>ShippingAddress.Location</h2>
+    <dl class="kv">
+        <div>
+            <dt>Latitude</dt>
+            <dd>@Model.ShippingAddress.Location.Latitude</dd>
+            <span class="tag tag-hidden">hidden field</span>
+        </div>
+        <div>
+            <dt>Longitude</dt>
+            <dd>@Model.ShippingAddress.Location.Longitude</dd>
+            <span class="tag tag-hidden">hidden field</span>
+        </div>
+    </dl>
+</section>
+</div>
+
+<section class="card">
+    <h2>Edit and save</h2>
+    @using (Html.BeginPersistedForm(Model, "Save", "Order"))
+    {
+        <div class="fields">
+            <div>
+                @Html.LabelFor(m => m.CustomerName, "Customer name")
+                @Html.TextBoxFor(m => m.CustomerName)
+            </div>
+            <div>
+                @Html.LabelFor(m => m.ShippingAddress.City, "City")
+                @Html.TextBoxFor(m => m.ShippingAddress.City)
+            </div>
+        </div>
+
+        <button type="submit">Save order</button>
+    }
+</section>
