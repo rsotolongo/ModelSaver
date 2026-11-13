@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using ProQualEx.ModelSaver.Internal;
 
 namespace ProQualEx.ModelSaver.Core.Tests;
@@ -6,26 +5,32 @@ namespace ProQualEx.ModelSaver.Core.Tests;
 public class RenderedNameScannerTests
 {
     [Fact]
-    public void ExtractNames_DoubleQuotedInput_IsExtracted()
+    public void ExtractNamesDoubleQuotedInputIsExtracted()
     {
-        var html = "<input type=\"text\" name=\"Name\" value=\"Ada\" />";
-        var names = RenderedNameScanner.ExtractNames(html);
+        const string html = "<input type=\"text\" name=\"Name\" value=\"Ada\" />";
+
+        HashSet<string> names = RenderedNameScanner.ExtractNames(html);
+
         Assert.Contains("Name", names);
     }
 
     [Fact]
-    public void ExtractNames_SingleQuotedInput_IsExtracted()
+    public void ExtractNamesSingleQuotedInputIsExtracted()
     {
-        var html = "<input type='text' name='Name' value='Ada' />";
-        var names = RenderedNameScanner.ExtractNames(html);
+        const string html = "<input type='text' name='Name' value='Ada' />";
+
+        HashSet<string> names = RenderedNameScanner.ExtractNames(html);
+
         Assert.Contains("Name", names);
     }
 
     [Fact]
-    public void ExtractNames_SelectAndTextarea_AreExtracted()
+    public void ExtractNamesSelectAndTextareaAreExtracted()
     {
-        var html = "<select name=\"Country\"></select><textarea name=\"Bio\"></textarea>";
-        var names = RenderedNameScanner.ExtractNames(html);
+        const string html = "<select name=\"Country\"></select><textarea name=\"Bio\"></textarea>";
+
+        HashSet<string> names = RenderedNameScanner.ExtractNames(html);
+
         Assert.Contains("Country", names);
         Assert.Contains("Bio", names);
     }
@@ -35,26 +40,34 @@ public class RenderedNameScannerTests
     [InlineData("button")]
     [InlineData("reset")]
     [InlineData("image")]
-    public void ExtractNames_ExcludesNonDataInputTypes(string inputType)
+    public void ExtractNamesExcludesNonDataInputTypes(string inputType)
     {
-        var html = $"<input type=\"{inputType}\" name=\"Save\" value=\"Save\" />";
-        var names = RenderedNameScanner.ExtractNames(html);
+        string html = $"<input type=\"{inputType}\" name=\"Save\" value=\"Save\" />";
+
+        HashSet<string> names = RenderedNameScanner.ExtractNames(html);
+
         Assert.DoesNotContain("Save", names);
     }
 
     [Fact]
-    public void ExtractNames_NonSelfClosingInputTag_IsExtracted()
+    public void ExtractNamesNonSelfClosingInputTagIsExtracted()
     {
-        var html = "<input type=\"text\" name=\"Name\" value=\"Ada\">";
-        var names = RenderedNameScanner.ExtractNames(html);
+        const string html = "<input type=\"text\" name=\"Name\" value=\"Ada\">";
+
+        HashSet<string> names = RenderedNameScanner.ExtractNames(html);
+
         Assert.Contains("Name", names);
     }
 
     [Fact]
-    public void ExtractNames_MultipleElements_ReturnsAllNames()
+    public void ExtractNamesMultipleElementsReturnsAllNames()
     {
-        var html = "<input name=\"A\" /><input name=\"B\" />";
-        var names = RenderedNameScanner.ExtractNames(html);
-        Assert.Equal(new HashSet<string> { "A", "B" }, names);
+        const string html = "<input name=\"A\" /><input name=\"B\" />";
+
+        HashSet<string> names = RenderedNameScanner.ExtractNames(html);
+
+        Assert.Equal(2, names.Count);
+        Assert.Contains("A", names);
+        Assert.Contains("B", names);
     }
 }

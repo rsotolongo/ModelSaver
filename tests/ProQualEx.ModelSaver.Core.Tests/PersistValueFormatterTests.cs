@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using ProQualEx.ModelSaver.Internal;
 
@@ -7,46 +6,48 @@ namespace ProQualEx.ModelSaver.Core.Tests;
 public class PersistValueFormatterTests
 {
     [Fact]
-    public void Format_Null_ReturnsEmptyString()
+    public void FormatNullReturnsEmptyString()
     {
-        Assert.Equal(string.Empty, PersistValueFormatter.Format(null));
+        Assert.Equal(string.Empty, PersistValueFormatter.Format(value: null));
     }
 
     [Fact]
-    public void Format_String_ReturnsSameString()
+    public void FormatStringReturnsSameString()
     {
         Assert.Equal("Ada", PersistValueFormatter.Format("Ada"));
     }
 
     [Fact]
-    public void Format_Int_ReturnsDigits()
+    public void FormatIntReturnsDigits()
     {
         Assert.Equal("42", PersistValueFormatter.Format(42));
     }
 
     [Fact]
-    public void Format_Bool_ReturnsTrueOrFalseText()
+    public void FormatBoolReturnsTrueOrFalseText()
     {
-        Assert.Equal("True", PersistValueFormatter.Format(true));
+        Assert.Equal("True", PersistValueFormatter.Format(value: true));
     }
 
     [Fact]
-    public void Format_Guid_ReturnsGuidString()
+    public void FormatGuidReturnsGuidString()
     {
-        var guid = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        Guid guid = Guid.Empty;
+
         Assert.Equal(guid.ToString(), PersistValueFormatter.Format(guid));
     }
 
     [Fact]
-    public void Format_DateTime_MatchesCurrentCultureConversion()
+    public void FormatDateTimeOffsetMatchesCurrentCultureConversion()
     {
-        var originalCulture = CultureInfo.CurrentCulture;
+        CultureInfo originalCulture = CultureInfo.CurrentCulture;
         try
         {
             CultureInfo.CurrentCulture = new CultureInfo("en-US");
-            var date = new DateTime(2026, 3, 5);
+            var date = new DateTimeOffset(2026, 3, 5, 0, 0, 0, TimeSpan.Zero);
 
-            var expected = Convert.ToString(date, CultureInfo.CurrentCulture);
+            string? expected = Convert.ToString(date, CultureInfo.CurrentCulture);
+
             Assert.Equal(expected, PersistValueFormatter.Format(date));
         }
         finally

@@ -1,12 +1,18 @@
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
 namespace ProQualEx.ModelSaver;
 
+/// <summary>
+/// Renders persist fields as HTML hidden inputs.
+/// </summary>
 public static class HiddenFieldRenderer
 {
+    /// <summary>
+    /// Renders each field as an encoded hidden input element.
+    /// </summary>
+    /// <param name="fields">The fields to render.</param>
+    /// <returns>The concatenated HTML of all hidden inputs.</returns>
     public static string Render(IEnumerable<PersistField> fields)
     {
         if (fields is null)
@@ -16,9 +22,9 @@ public static class HiddenFieldRenderer
 
         var builder = new StringBuilder();
 
-        foreach (var field in fields)
+        foreach (PersistField field in fields)
         {
-            var id = field.Name.Replace('.', '_');
+            string id = field.Name.Replace('.', '_');
 
             builder.Append("<input type=\"hidden\" name=\"")
                 .Append(WebUtility.HtmlEncode(field.Name))

@@ -1,17 +1,16 @@
-using System;
-using ProQualEx.ModelSaver;
+using System.Reflection;
 
 namespace ProQualEx.ModelSaver.Core.Tests;
 
 public class HiddenFieldDifferTests
 {
     [Fact]
-    public void GetMissingFields_PropertyAlreadyRendered_IsExcluded()
+    public void GetMissingFieldsPropertyAlreadyRenderedIsExcluded()
     {
         var model = new FlatModel { Id = 42, Name = "Ada" };
-        var renderedHtml = "<input type=\"text\" name=\"Name\" value=\"Ada\" />";
+        const string renderedHtml = "<input type=\"text\" name=\"Name\" value=\"Ada\" />";
 
-        var missing = HiddenFieldDiffer.GetMissingFields(model, renderedHtml);
+        IReadOnlyList<PersistField> missing = HiddenFieldDiffer.GetMissingFields(model, renderedHtml);
 
         Assert.Single(missing);
         Assert.Equal("Id", missing[0].Name);
@@ -19,40 +18,45 @@ public class HiddenFieldDifferTests
     }
 
     [Fact]
-    public void GetMissingFields_NothingRendered_ReturnsAllEligibleFields()
+    public void GetMissingFieldsNothingRenderedReturnsAllEligibleFields()
     {
         var model = new FlatModel { Id = 42, Name = "Ada" };
 
-        var missing = HiddenFieldDiffer.GetMissingFields(model, renderedFormHtml: "");
+        IReadOnlyList<PersistField> missing = HiddenFieldDiffer.GetMissingFields(model, renderedFormHtml: string.Empty);
 
         Assert.Equal(2, missing.Count);
     }
 
     [Fact]
-    public void GetMissingFields_EverythingRendered_ReturnsEmpty()
+    public void GetMissingFieldsEverythingRenderedReturnsEmpty()
     {
         var model = new FlatModel { Id = 42, Name = "Ada" };
-        var renderedHtml = "<input name=\"Id\" /><input name=\"Name\" />";
+        const string renderedHtml = "<input name=\"Id\" /><input name=\"Name\" />";
 
-        var missing = HiddenFieldDiffer.GetMissingFields(model, renderedHtml);
+        IReadOnlyList<PersistField> missing = HiddenFieldDiffer.GetMissingFields(model, renderedHtml);
 
         Assert.Empty(missing);
     }
 
     [Fact]
-    public void GetMissingFields_NestedProperty_UsesDottedNameForDiff()
+    public void GetMissingFieldsNestedPropertyUsesDottedNameForDiff()
     {
         var model = new ParentWithNestedModel { Address = new AddressModel { City = "Miami" } };
-        var renderedHtml = "<input name=\"Address.City\" />";
+        const string renderedHtml = "<input name=\"Address.City\" />";
 
-        var missing = HiddenFieldDiffer.GetMissingFields(model, renderedHtml);
+        IReadOnlyList<PersistField> missing = HiddenFieldDiffer.GetMissingFields(model, renderedHtml);
 
         Assert.Empty(missing);
     }
 
     [Fact]
-    public void GetMissingFields_NullModel_Throws()
+    public void GetMissingFieldsNullModelThrows()
     {
-        Assert.Throws<ArgumentNullException>(() => HiddenFieldDiffer.GetMissingFields(null!, ""));
+        MethodInfo method = typeof(HiddenFieldDiffer).GetMethod(nameof(HiddenFieldDiffer.GetMissingFields))
+            ?? throw new InvalidOperationException("GetMissingFields was not found.");
+
+        TargetInvocationException exception = Assert.Throws<TargetInvocationException>(() => method.Invoke(obj: null, [null, string.Empty]));
+
+        Assert.IsType<ArgumentNullException>(exception.InnerException);
     }
 }

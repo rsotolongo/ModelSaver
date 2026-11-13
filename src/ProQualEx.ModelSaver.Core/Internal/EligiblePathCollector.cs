@@ -1,39 +1,39 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 namespace ProQualEx.ModelSaver.Internal;
 
 internal static class EligiblePathCollector
 {
-    public static IReadOnlyList<EligiblePath> Collect(object model)
+    internal static IReadOnlyList<EligiblePath> Collect(object model)
     {
-        var results = new List<EligiblePath>();
-        CollectInto(model, prefix: "", results);
+        List<EligiblePath> results = [];
+        CollectInto(model, prefix: string.Empty, results);
         return results;
     }
 
     private static void CollectInto(object model, string prefix, List<EligiblePath> results)
     {
-        var properties = model.GetType()
+        IEnumerable<PropertyInfo> properties = model.GetType()
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(p => p.CanRead && p.GetIndexParameters().Length == 0);
+            .Where(static p => p.CanRead && p.GetIndexParameters().Length is 0);
 
-        foreach (var property in properties)
+        foreach (PropertyInfo property in properties)
         {
             if (!PersistenceResolver.ShouldPersist(property))
             {
                 continue;
             }
 
-            var name = prefix.Length == 0 ? property.Name : $"{prefix}.{property.Name}";
-            var value = property.GetValue(model);
+            string name = prefix.Length is 0 ? property.Name : $"{prefix}.{property.Name}";
+            object? value = property.GetValue(model);
 
             if (ScalarTypes.IsScalar(property.PropertyType))
             {
                 results.Add(new EligiblePath(name, value, property.PropertyType));
+                continue;
             }
-            else if (value is not null)
+
+            if (value is not null)
             {
                 CollectInto(value, name, results);
             }

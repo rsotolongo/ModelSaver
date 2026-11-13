@@ -1,73 +1,66 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Globalization;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using ProQualEx.ModelSaver;
 using ProQualEx.ModelSaver.AspNetCore;
 
 namespace ProQualEx.ModelSaver.AspNetCore.Tests;
 
 public class PersistOnPostbackTagHelperTests
 {
-    [PersistOnPostback]
-    private class OrderModel
-    {
-        public int Id { get; set; }
-        public string CustomerName { get; set; } = "";
-    }
-
     [Fact]
-    public async Task ProcessAsync_AppendsHiddenFieldsForMissingProperties()
+    public async Task ProcessAsyncAppendsHiddenFieldsForMissingPropertiesAsync()
     {
         var helper = new PersistOnPostbackTagHelper
         {
-            Model = new OrderModel { Id = 7, CustomerName = "Ada" }
+            Model = new OrderModel { Id = 7, CustomerName = "Ada" },
         };
-        var output = CreateOutput("<input name=\"CustomerName\" value=\"Ada\" />");
+        TagHelperOutput output = CreateOutput("<input name=\"CustomerName\" value=\"Ada\" />");
 
-        await helper.ProcessAsync(CreateContext(), output);
+        await helper.ProcessAsync(CreateContext(), output).ConfigureAwait(true);
 
-        var rendered = output.PostContent.GetContent();
-        Assert.Contains("name=\"Id\"", rendered);
-        Assert.DoesNotContain("name=\"CustomerName\"", rendered);
+        string rendered = output.PostContent.GetContent();
+        Assert.Contains("name=\"Id\"", rendered, StringComparison.Ordinal);
+        Assert.DoesNotContain("name=\"CustomerName\"", rendered, StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task ProcessAsync_EverythingAlreadyRendered_AppendsNothing()
+    public async Task ProcessAsyncEverythingAlreadyRenderedAppendsNothingAsync()
     {
         var helper = new PersistOnPostbackTagHelper
         {
-            Model = new OrderModel { Id = 7, CustomerName = "Ada" }
+            Model = new OrderModel { Id = 7, CustomerName = "Ada" },
         };
-        var output = CreateOutput("<input name=\"Id\" /><input name=\"CustomerName\" />");
+        TagHelperOutput output = CreateOutput("<input name=\"Id\" /><input name=\"CustomerName\" />");
 
-        await helper.ProcessAsync(CreateContext(), output);
+        await helper.ProcessAsync(CreateContext(), output).ConfigureAwait(true);
 
         Assert.Equal(string.Empty, output.PostContent.GetContent());
     }
 
     [Fact]
-    public async Task ProcessAsync_NullModel_DoesNothing()
+    public async Task ProcessAsyncNullModelDoesNothingAsync()
     {
         var helper = new PersistOnPostbackTagHelper { Model = null };
-        var output = CreateOutput("<input name=\"Id\" />");
+        TagHelperOutput output = CreateOutput("<input name=\"Id\" />");
 
-        await helper.ProcessAsync(CreateContext(), output);
+        await helper.ProcessAsync(CreateContext(), output).ConfigureAwait(true);
 
         Assert.Equal(string.Empty, output.PostContent.GetContent());
     }
 
-    private static TagHelperContext CreateContext() =>
-        new TagHelperContext(
-            new TagHelperAttributeList(),
+    private static TagHelperContext CreateContext()
+    {
+        return new TagHelperContext(
+            [],
             new Dictionary<object, object>(),
-            Guid.NewGuid().ToString("N"));
+            Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
+    }
 
-    private static TagHelperOutput CreateOutput(string childContent) =>
-        new TagHelperOutput(
+    private static TagHelperOutput CreateOutput(string childContent)
+    {
+        return new TagHelperOutput(
             "form",
-            new TagHelperAttributeList(),
-            (useCachedResult, encoder) =>
-                Task.FromResult<TagHelperContent>(new DefaultTagHelperContent().SetHtmlContent(childContent)));
+            [],
+            (_, _) => Task.FromResult(new DefaultTagHelperContent().SetHtmlContent(childContent)));
+    }
 }

@@ -1,9 +1,9 @@
-using System;
 using System.Web.Mvc;
 using ProQualEx.ModelSaver.Mvc5.Sample.Models;
 
 namespace ProQualEx.ModelSaver.Mvc5.Sample.Controllers;
 
+[AllowAnonymous]
 public class OrderController : Controller
 {
     [HttpGet]
@@ -14,8 +14,8 @@ public class OrderController : Controller
         var model = new OrderEditModel
         {
             Id = 42,
-            CustomerId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-            CreatedAtUtc = new DateTime(2026, 1, 15, 0, 0, 0, DateTimeKind.Utc),
+            CustomerId = new Guid(0x11111111, 0x1111, 0x1111, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11),
+            CreatedAtUtc = new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero),
             Total = 199.99m,
             CustomerName = "Ada Lovelace",
             ShippingAddress = new ShippingAddress
@@ -24,15 +24,16 @@ public class OrderController : Controller
                 City = "London",
                 PostalCode = "SW1Y 4JH",
                 Location = new GeoPoint { Latitude = 51.5074, Longitude = -0.1278 },
-                DeliveryInstructions = "This value is [PersistOnPostback(false)] - it will NOT come back."
+                DeliveryInstructions = "This value is [PersistOnPostback(false)] - it will NOT come back.",
             },
-            DisplayOnlySummary = "This value is [PersistOnPostback(false)] - it will NOT come back."
+            DisplayOnlySummary = "This value is [PersistOnPostback(false)] - it will NOT come back.",
         };
 
         return View(model);
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public ActionResult Save(OrderEditModel model)
     {
         return View("Saved", model);

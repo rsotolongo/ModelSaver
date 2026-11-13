@@ -1,25 +1,30 @@
-using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace ProQualEx.ModelSaver.Internal;
 
 internal static class RenderedNameScanner
 {
-    private static readonly Regex NamedElementPattern = new Regex(
+    private static readonly TimeSpan MatchTimeout = TimeSpan.FromSeconds(1);
+
+    private static readonly Regex NamedElementPattern = new(
         @"<(input|select|textarea)\b[^>]*>",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase,
+        MatchTimeout);
 
-    private static readonly Regex AttributePattern = new Regex(
-        @"(\w[\w-]*)\s*=\s*(""([^""]*)""|'([^']*)')",
-        RegexOptions.Compiled);
+    private static readonly Regex AttributePattern = new(
+        @"(?<name>\w[\w-]*)\s*=\s*(?:""(?<double>[^""]*)""|'(?<single>[^']*)')",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture,
+        MatchTimeout);
 
-    private static readonly HashSet<string> ExcludedInputTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> ExcludedInputTypes = new(StringComparer.OrdinalIgnoreCase)
     {
-        "submit", "button", "reset", "image"
+        "submit",
+        "button",
+        "reset",
+        "image",
     };
 
-    public static HashSet<string> ExtractNames(string html)
+    internal static HashSet<string> ExtractNames(string html)
     {
         if (html is null)
         {
@@ -30,14 +35,14 @@ internal static class RenderedNameScanner
 
         foreach (Match element in NamedElementPattern.Matches(html))
         {
-            var attributes = ParseAttributes(element.Value);
+            Dictionary<string, string> attributes = ParseAttributes(element.Value);
 
-            if (attributes.TryGetValue("type", out var type) && ExcludedInputTypes.Contains(type))
+            if (attributes.TryGetValue("type", out string? type) && ExcludedInputTypes.Contains(type))
             {
                 continue;
             }
 
-            if (attributes.TryGetValue("name", out var name) && name.Length > 0)
+            if (attributes.TryGetValue("name", out string? name) && name.Length > 0)
             {
                 names.Add(name);
             }
@@ -52,9 +57,10 @@ internal static class RenderedNameScanner
 
         foreach (Match match in AttributePattern.Matches(elementHtml))
         {
-            var attributeName = match.Groups[1].Value;
-            var value = match.Groups[3].Success ? match.Groups[3].Value : match.Groups[4].Value;
-            attributes[attributeName] = value;
+            string attributeName = match.Groups["name"].Value;
+            attributes[attributeName] = match.Groups["double"].Success
+                ? match.Groups["double"].Value
+                : match.Groups["single"].Value;
         }
 
         return attributes;

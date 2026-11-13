@@ -1,9 +1,9 @@
 using System.Web.Mvc;
 using System.Web.Routing;
 
-namespace ProQualEx.ModelSaver.Mvc5.Sample;
+namespace ProQualEx.ModelSaver.Mvc5.Sample.Routing;
 
-public class RouteConfig
+public static class RouteConfig
 {
     public static void RegisterRoutes(RouteCollection routes)
     {

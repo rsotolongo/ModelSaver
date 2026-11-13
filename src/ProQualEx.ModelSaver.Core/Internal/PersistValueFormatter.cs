@@ -1,11 +1,10 @@
-using System;
 using System.Globalization;
 
 namespace ProQualEx.ModelSaver.Internal;
 
 internal static class PersistValueFormatter
 {
-    public static string Format(object? value)
+    internal static string Format(object? value)
     {
         if (value is null)
         {

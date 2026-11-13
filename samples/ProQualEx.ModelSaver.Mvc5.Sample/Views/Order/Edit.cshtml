@@ -109,6 +109,8 @@
     <h2>Edit and save</h2>
     @using (Html.BeginPersistedForm(Model, "Save", "Order"))
     {
+        @Html.AntiForgeryToken()
+
         <div class="fields">
             <div>
                 @Html.LabelFor(m => m.CustomerName, "Customer name")

@@ -1,9 +1,8 @@
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.UseRouting();
 
@@ -14,4 +13,4 @@ app.MapControllerRoute(
     pattern: "{controller=Order}/{action=Edit}/{id?}")
     .WithStaticAssets();
 
-app.Run();
+await app.RunAsync().ConfigureAwait(false);

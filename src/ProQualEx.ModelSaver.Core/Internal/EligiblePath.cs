@@ -1,17 +1,10 @@
-using System;
-
 namespace ProQualEx.ModelSaver.Internal;
 
-internal sealed class EligiblePath
+internal sealed class EligiblePath(string name, object? value, Type valueType)
 {
-    public string Name { get; }
-    public object? Value { get; }
-    public Type ValueType { get; }
+    internal string Name { get; } = name;
 
-    public EligiblePath(string name, object? value, Type valueType)
-    {
-        Name = name;
-        Value = value;
-        ValueType = valueType;
-    }
+    internal object? Value { get; } = value;
+
+    internal Type ValueType { get; } = valueType;
 }

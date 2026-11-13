@@ -1,15 +1,19 @@
-using System;
-
 namespace ProQualEx.ModelSaver;
 
-public sealed class PersistField
+/// <summary>
+/// A name and value pair to be persisted as a hidden form field.
+/// </summary>
+/// <param name="name">The form field name, using dotted paths for nested properties.</param>
+/// <param name="value">The string value to persist.</param>
+public sealed class PersistField(string name, string value)
 {
-    public string Name { get; }
-    public string Value { get; }
+    /// <summary>
+    /// Gets the form field name.
+    /// </summary>
+    public string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
 
-    public PersistField(string name, string value)
-    {
-        Name = name ?? throw new ArgumentNullException(nameof(name));
-        Value = value ?? throw new ArgumentNullException(nameof(value));
-    }
+    /// <summary>
+    /// Gets the string value to persist.
+    /// </summary>
+    public string Value { get; } = value ?? throw new ArgumentNullException(nameof(value));
 }

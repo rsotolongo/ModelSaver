@@ -1,87 +1,63 @@
-using ProQualEx.ModelSaver;
+using System.Reflection;
 using ProQualEx.ModelSaver.Internal;
 
 namespace ProQualEx.ModelSaver.Core.Tests;
 
-public class NoAttributesModel
-{
-    public string Name { get; set; } = "";
-}
-
-[PersistOnPostback]
-public class ClassDefaultModel
-{
-    public string IncludedByDefault { get; set; } = "";
-
-    [PersistOnPostback(false)]
-    public string ExcludedByOverride { get; set; } = "";
-}
-
-public class PropertyOnlyModel
-{
-    [PersistOnPostback]
-    public string IncludedExplicitly { get; set; } = "";
-
-    public string NotMarked { get; set; } = "";
-}
-
-[PersistOnPostback(false)]
-public class ClassDefaultFalseModel
-{
-    public string NotPersistedByDefault { get; set; } = "";
-
-    [PersistOnPostback]
-    public string PersistedByOverride { get; set; } = "";
-}
-
 public class PersistenceResolverTests
 {
     [Fact]
-    public void ShouldPersist_NoAttributesAnywhere_ReturnsFalse()
+    public void ShouldPersistNoAttributesAnywhereReturnsFalse()
     {
-        var property = typeof(NoAttributesModel).GetProperty(nameof(NoAttributesModel.Name))!;
+        PropertyInfo property = typeof(NoAttributesModel).GetProperty(nameof(NoAttributesModel.Name))!;
+
         Assert.False(PersistenceResolver.ShouldPersist(property));
     }
 
     [Fact]
-    public void ShouldPersist_ClassLevelDefaultTrue_AppliesToUnmarkedProperty()
+    public void ShouldPersistClassLevelDefaultTrueAppliesToUnmarkedProperty()
     {
-        var property = typeof(ClassDefaultModel).GetProperty(nameof(ClassDefaultModel.IncludedByDefault))!;
+        PropertyInfo property = typeof(ClassDefaultModel).GetProperty(nameof(ClassDefaultModel.IncludedByDefault))!;
+
         Assert.True(PersistenceResolver.ShouldPersist(property));
     }
 
     [Fact]
-    public void ShouldPersist_PropertyOverridesClassDefault_ToFalse()
+    public void ShouldPersistPropertyOverridesClassDefaultToFalse()
     {
-        var property = typeof(ClassDefaultModel).GetProperty(nameof(ClassDefaultModel.ExcludedByOverride))!;
+        PropertyInfo property = typeof(ClassDefaultModel).GetProperty(nameof(ClassDefaultModel.ExcludedByOverride))!;
+
         Assert.False(PersistenceResolver.ShouldPersist(property));
     }
 
     [Fact]
-    public void ShouldPersist_PropertyOnlyAttribute_ReturnsTrueForMarkedProperty()
+    public void ShouldPersistPropertyOnlyAttributeReturnsTrueForMarkedProperty()
     {
-        var property = typeof(PropertyOnlyModel).GetProperty(nameof(PropertyOnlyModel.IncludedExplicitly))!;
+        PropertyInfo property = typeof(PropertyOnlyModel).GetProperty(nameof(PropertyOnlyModel.IncludedExplicitly))!;
+
         Assert.True(PersistenceResolver.ShouldPersist(property));
     }
 
     [Fact]
-    public void ShouldPersist_PropertyOnlyAttribute_ReturnsFalseForUnmarkedProperty()
+    public void ShouldPersistPropertyOnlyAttributeReturnsFalseForUnmarkedProperty()
     {
-        var property = typeof(PropertyOnlyModel).GetProperty(nameof(PropertyOnlyModel.NotMarked))!;
+        PropertyInfo property = typeof(PropertyOnlyModel).GetProperty(nameof(PropertyOnlyModel.NotMarked))!;
+
         Assert.False(PersistenceResolver.ShouldPersist(property));
     }
 
     [Fact]
-    public void ShouldPersist_ClassLevelDefaultFalse_PropertyOverridesToTrue()
+    public void ShouldPersistClassLevelDefaultFalsePropertyOverridesToTrue()
     {
-        var property = typeof(ClassDefaultFalseModel).GetProperty(nameof(ClassDefaultFalseModel.PersistedByOverride))!;
+        PropertyInfo property = typeof(ClassDefaultFalseModel).GetProperty(nameof(ClassDefaultFalseModel.PersistedByOverride))!;
+
         Assert.True(PersistenceResolver.ShouldPersist(property));
     }
 
     [Fact]
-    public void ShouldPersist_ClassLevelDefaultFalse_UnmarkedPropertyReturnsFalse()
+    public void ShouldPersistClassLevelDefaultFalseUnmarkedPropertyReturnsFalse()
     {
-        var property = typeof(ClassDefaultFalseModel).GetProperty(nameof(ClassDefaultFalseModel.NotPersistedByDefault))!;
+        PropertyInfo property = typeof(ClassDefaultFalseModel).GetProperty(nameof(ClassDefaultFalseModel.NotPersistedByDefault))!;
+
         Assert.False(PersistenceResolver.ShouldPersist(property));
     }
 }

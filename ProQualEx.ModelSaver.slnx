@@ -1,0 +1,21 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/samples/">
+    <Project Path="samples/ProQualEx.ModelSaver.AspNetCore.Sample/ProQualEx.ModelSaver.AspNetCore.Sample.csproj" />
+    <Project Path="samples/ProQualEx.ModelSaver.Mvc5.Sample/ProQualEx.ModelSaver.Mvc5.Sample.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/ProQualEx.ModelSaver.AspNetCore/ProQualEx.ModelSaver.AspNetCore.csproj" />
+    <Project Path="src/ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj" />
+    <Project Path="src/ProQualEx.ModelSaver.Mvc5/ProQualEx.ModelSaver.Mvc5.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ProQualEx.ModelSaver.AspNetCore.Tests/ProQualEx.ModelSaver.AspNetCore.Tests.csproj" />
+    <Project Path="tests/ProQualEx.ModelSaver.Core.Tests/ProQualEx.ModelSaver.Core.Tests.csproj" />
+    <Project Path="tests/ProQualEx.ModelSaver.Mvc5.Tests/ProQualEx.ModelSaver.Mvc5.Tests.csproj" />
+  </Folder>
+</Solution>

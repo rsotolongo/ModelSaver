@@ -1,14 +1,14 @@
-using System;
-
 namespace ProQualEx.ModelSaver;
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false)]
-public sealed class PersistOnPostbackAttribute : Attribute
+/// <summary>
+/// Marks a class or property as persisted (or explicitly not persisted) across form postbacks.
+/// </summary>
+/// <param name="persist"><see langword="true"/> to persist the member; <see langword="false"/> to exclude it.</param>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
+public sealed class PersistOnPostbackAttribute(bool persist = true) : Attribute
 {
-    public bool Persist { get; }
-
-    public PersistOnPostbackAttribute(bool persist = true)
-    {
-        Persist = persist;
-    }
+    /// <summary>
+    /// Gets a value indicating whether the decorated member is persisted.
+    /// </summary>
+    public bool Persist { get; } = persist;
 }
