@@ -1,0 +1,33 @@
+name: Test RELEASE_DEPLOY_KEY bypass on windows-latest
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Trivial change, commit, and push over SSH with the deploy key
+        shell: bash
+        env:
+          DEPLOY_KEY: ${{ secrets.RELEASE_DEPLOY_KEY }}
+        run: |
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > .bypass-test
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .bypass-test
+          git commit -m "test: RELEASE_DEPLOY_KEY bypass probe on windows-latest [skip ci]"
+
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/release_deploy_key
+          chmod 600 ~/.ssh/release_deploy_key
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+
+          GIT_SSH_COMMAND="ssh -i ~/.ssh/release_deploy_key -o UserKnownHostsFile=~/.ssh/known_hosts" \
+            git push git@github.com:rsotolongo/ModelSaver.git HEAD:main
