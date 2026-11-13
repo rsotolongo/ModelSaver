@@ -5,23 +5,62 @@
 
 <h1>Edit Order (ASP.NET Core)</h1>
 
-<p>
-    Only <strong>Customer name</strong> is shown as an editable field below.
-    <code>Id</code>, <code>CustomerId</code>, <code>CreatedAtUtc</code> and
-    <code>Total</code> are not on the form at all - the
-    <code>asp-persist-model</code> Tag Helper adds them as hidden fields
-    automatically because <code>OrderEditModel</code> is marked
-    <code>[PersistOnPostback]</code>.
-</p>
+<h2>Model as it arrives at the client</h2>
 
 <dl>
+    <dt>Id</dt>
+    <dd>@Model.Id</dd>
+
+    <dt>CustomerId</dt>
+    <dd>@Model.CustomerId</dd>
+
+    <dt>CreatedAtUtc</dt>
+    <dd>@Model.CreatedAtUtc</dd>
+
+    <dt>Total</dt>
+    <dd>@Model.Total</dd>
+
+    <dt>CustomerName</dt>
+    <dd>@Model.CustomerName</dd>
+
+    <dt>ShippingAddress.Street</dt>
+    <dd>@Model.ShippingAddress.Street</dd>
+
+    <dt>ShippingAddress.City</dt>
+    <dd>@Model.ShippingAddress.City</dd>
+
+    <dt>ShippingAddress.PostalCode</dt>
+    <dd>"@Model.ShippingAddress.PostalCode"</dd>
+
+    <dt>ShippingAddress.Location.Latitude</dt>
+    <dd>@Model.ShippingAddress.Location.Latitude</dd>
+
+    <dt>ShippingAddress.Location.Longitude</dt>
+    <dd>@Model.ShippingAddress.Location.Longitude</dd>
+
+    <dt>ShippingAddress.DeliveryInstructions (marked <code>[PersistOnPostback(false)]</code>)</dt>
+    <dd>"@Model.ShippingAddress.DeliveryInstructions"</dd>
+
     <dt>DisplayOnlySummary (marked <code>[PersistOnPostback(false)]</code>)</dt>
-    <dd>@Model.DisplayOnlySummary</dd>
+    <dd>"@Model.DisplayOnlySummary"</dd>
 </dl>
+
+<p>
+    Only <strong>Customer name</strong> and <strong>City</strong> are editable
+    fields in the form below. Every other value listed above - including the
+    nested <code>ShippingAddress.*</code> and
+    <code>ShippingAddress.Location.*</code> properties - is not on the form;
+    the <code>asp-persist-model</code> Tag Helper adds them as hidden fields because the model types are marked
+    <code>[PersistOnPostback]</code>. Properties opted out with
+    <code>[PersistOnPostback(false)]</code> are not sent back.
+</p>
 
 <form asp-action="Save" asp-persist-model="Model">
     <label asp-for="CustomerName">Customer name</label>
     <input asp-for="CustomerName" type="text" />
+
+    <label asp-for="ShippingAddress.City">City</label>
+    <input asp-for="ShippingAddress.City" type="text" />
 
     <button type="submit">Save</button>
 </form>
