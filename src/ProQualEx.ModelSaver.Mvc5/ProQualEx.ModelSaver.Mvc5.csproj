@@ -5,6 +5,8 @@
     <PackageId>ProQualEx.ModelSaver.Mvc5</PackageId>
     <Version>0.1.0</Version>
     <Description>ASP.NET MVC 5 adapter for ProQualEx.ModelSaver: automatic hidden-field persistence for Html.BeginForm.</Description>
+    <PackageTags>aspnet;mvc5;html-helper;forms;hidden-fields;model-binding</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +19,10 @@
 
   <ItemGroup>
     <ProjectReference Include="../ProQualEx.ModelSaver.Core/ProQualEx.ModelSaver.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

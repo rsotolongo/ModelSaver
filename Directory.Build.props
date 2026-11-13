@@ -12,4 +12,14 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <PropertyGroup Label="NuGet package metadata">
+    <Authors>Ricardo Sotolongo</Authors>
+    <Copyright>Copyright (c) 2026 Ricardo Sotolongo</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/rsotolongo/ModelSaver</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/rsotolongo/ModelSaver.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts</PackageOutputPath>
+  </PropertyGroup>
+
 </Project>

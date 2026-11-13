@@ -6,6 +6,12 @@
     <PackageId>ProQualEx.ModelSaver.Core</PackageId>
     <Version>0.1.0</Version>
     <Description>Framework-agnostic core for ProQualEx.ModelSaver: attribute-driven automatic hidden-field persistence for ASP.NET MVC forms.</Description>
+    <PackageTags>aspnet;mvc;forms;hidden-fields;model-binding</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
 </Project>
