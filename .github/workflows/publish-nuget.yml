@@ -12,10 +12,13 @@ name: Publish NuGet packages
 # (see https://learn.microsoft.com/nuget/nuget-org/trusted-publishing), and a
 # NUGET_USER repository secret set to the nuget.org profile name (not the email).
 #
-# main is protected by a ruleset requiring a pull request (bypassed only for the admin
-# role), so the version-bump commit can't push with the default GITHUB_TOKEN - it needs a
-# RELEASE_PAT repository secret: a PAT belonging to the repo admin, scoped to this repo's
-# Contents: Read and write.
+# main is protected by a ruleset requiring a pull request, bypassed for the admin role and
+# for the repo's write-access Deploy Key. The version-bump commit can't push with the
+# default GITHUB_TOKEN (runs as the github-actions app, not a bypassed actor) - and, found
+# empirically, not with a PAT either (fine-grained or classic): neither is recognized as the
+# admin role for ruleset bypass on this personal repo. Only the Deploy Key bypass actor type
+# reliably works here, so this pushes over SSH with a RELEASE_DEPLOY_KEY repository secret
+# (the private half of a deploy key added to the repo with write access).
 on:
   push:
     tags:
@@ -108,15 +111,14 @@ jobs:
         if: success()
         env:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
-          RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
+          DEPLOY_KEY: ${{ secrets.RELEASE_DEPLOY_KEY }}
         # A tag push checks out a detached commit, and main may have moved since the tag
         # was cut, so re-sync to origin/main's tip rather than committing from that detached
         # HEAD or an out-of-date local branch.
         #
         # main is protected by a ruleset requiring a pull request, bypassed only for the
-        # Repository admin role. The default GITHUB_TOKEN pushes as the github-actions app,
-        # not as that role, so it would be rejected here - push with a PAT belonging to the
-        # admin account instead, which the bypass does cover.
+        # admin role and the repo's write-access Deploy Key - not for a PAT, fine-grained or
+        # classic (confirmed empirically). Push over SSH with that deploy key instead.
         run: |
           git fetch origin main
           git checkout -B main origin/main
@@ -142,5 +144,15 @@ jobs:
           }
           else {
             git commit -m "Bump package Version to $env:PACKAGE_VERSION [skip ci]"
-            git push "https://x-access-token:$env:RELEASE_PAT@github.com/rsotolongo/ModelSaver.git" HEAD:main
+
+            $keyPath = Join-Path $env:RUNNER_TEMP 'release_deploy_key'
+            ($env:DEPLOY_KEY -replace "`r`n", "`n") | Set-Content -Path $keyPath -NoNewline -Encoding ascii
+            icacls $keyPath /inheritance:r | Out-Null
+            icacls $keyPath /grant:r "$($env:USERNAME):(R)" | Out-Null
+
+            $knownHostsPath = Join-Path $env:RUNNER_TEMP 'known_hosts'
+            ssh-keyscan -t ed25519 github.com 2>$null | Set-Content -Path $knownHostsPath
+
+            $env:GIT_SSH_COMMAND = "ssh -i `"$keyPath`" -o UserKnownHostsFile=`"$knownHostsPath`""
+            git push git@github.com:rsotolongo/ModelSaver.git HEAD:main
           }

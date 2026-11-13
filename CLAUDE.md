@@ -158,28 +158,37 @@ tags/`workflow_dispatch`), but it is a direct, unreviewed push straight to
 `main` — know that before changing this step.
 
 `main` is protected by a repository **ruleset** (not classic branch
-protection — see §below), requiring a pull request and bypassed only for
-the `Repository admin` role. The default `GITHUB_TOKEN` authenticates as
-the `github-actions` app, not that role, so it can't push here: this step
-instead pushes with `secrets.RELEASE_PAT`, a PAT belonging to the repo
-admin (`rsotolongo`), embedded directly in the push URL
-(`https://x-access-token:$env:RELEASE_PAT@github.com/...`) rather than via
-`actions/checkout`'s persisted credentials, so only this one push uses the
-elevated token. If that secret is ever missing/expired, this step — and
-only this step — fails; the actual NuGet publish above it has already
-succeeded.
+protection — see §below), requiring a pull request. The default
+`GITHUB_TOKEN` authenticates as the `github-actions` app, which isn't on
+the bypass list, so it can't push here. Neither can a PAT — **confirmed
+empirically** (not documented): a fine-grained PAT scoped to Contents:
+Read/write, and separately a classic PAT with the `repo` scope, both got
+rejected with the exact same `GH013` "Changes must be made through a pull
+request" error as a plain unprivileged push, despite both belonging to the
+repo admin's account. GitHub evidently doesn't recognize either PAT type as
+the `Repository admin` role for ruleset bypass on a personal (non-org)
+repo — only a real authenticated-user push (SSH/browser session) or a
+**Deploy Key** does. This step pushes over SSH using
+`secrets.RELEASE_DEPLOY_KEY` (the private half of a write-access deploy
+key added to the repo, see below) for exactly that reason. If that secret
+is ever missing/invalid, this step — and only this step — fails; the
+actual NuGet publish above it has already succeeded. Don't "simplify" this
+back to a PAT without re-testing — it was tried twice and failed both
+times.
 
 ### Branch protection
 
 `main` has a ruleset (Settings → Rules → Rulesets → "Protect main"), not
 classic branch protection: requires a PR + 1 approval, blocks force-pushes
-and deletions, bypass list = `Repository admin` role only (`actor_id: 5`,
-confirmed empirically — GitHub doesn't document the numeric role IDs).
-Outside contributors can only land changes via a reviewed PR; the repo
-admin (and the release workflow's bump step, via `RELEASE_PAT`) can still
-push straight to `main`. Secret scanning + push protection and Dependabot
-security updates are also enabled at the repo level (`Settings → Code
-security`) — both free for a public repo.
+and deletions. Bypass list: `Repository admin` role (`actor_id: 5`,
+confirmed empirically — GitHub doesn't document the numeric role IDs) and
+`DeployKey` (`actor_id: null`, matches any deploy key on the repo — there's
+currently exactly one, "Release automation (write)", write-access, used by
+the release workflow's bump step via `RELEASE_DEPLOY_KEY`). Outside
+contributors can only land changes via a reviewed PR; the repo admin and
+that deploy key can still push straight to `main`. Secret scanning + push
+protection and Dependabot security updates are also enabled at the repo
+level (`Settings → Code security`) — both free for a public repo.
 
 Shared package metadata (`Authors`, `PackageLicenseExpression=MIT`,
 `RepositoryUrl`, `PackageProjectUrl`) lives once in the root
