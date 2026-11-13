@@ -21,9 +21,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelSaver.Mvc5.Tests", "te
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{5D20AA90-6969-D8BD-9DCD-8634F4692FDA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelSaver.Samples.AspNetCore", "samples\ModelSaver.Samples.AspNetCore\ModelSaver.Samples.AspNetCore.csproj", "{AD1C3BC8-EBE3-4CD9-ADD8-CCAB5B6AB3F2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelSaver.AspNetCore.Sample", "samples\ModelSaver.AspNetCore.Sample\ModelSaver.AspNetCore.Sample.csproj", "{AD1C3BC8-EBE3-4CD9-ADD8-CCAB5B6AB3F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelSaver.Samples.Mvc5", "samples\ModelSaver.Samples.Mvc5\ModelSaver.Samples.Mvc5.csproj", "{EA85F8C2-ACA3-4A12-8E34-0BC5D7A89592}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelSaver.Mvc5.Sample", "samples\ModelSaver.Mvc5.Sample\ModelSaver.Mvc5.Sample.csproj", "{EA85F8C2-ACA3-4A12-8E34-0BC5D7A89592}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

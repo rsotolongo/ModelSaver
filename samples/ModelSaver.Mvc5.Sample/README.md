@@ -1,7 +1,7 @@
-# ModelSaver.Samples.Mvc5
+# ModelSaver.Mvc5.Sample
 
 A classic ASP.NET MVC 5 app demonstrating `ModelSaver.Mvc5`. It mirrors
-`ModelSaver.Samples.AspNetCore` exactly, so you can compare the two
+`ModelSaver.AspNetCore.Sample` exactly, so you can compare the two
 adapters side by side.
 
 ## What it shows
@@ -34,13 +34,13 @@ DLLs straight to `bin\` (where IIS Express expects them).
 To run it (Windows, IIS Express installed):
 
 1. Open `ModelSaver.sln` in Visual Studio.
-2. Set `ModelSaver.Samples.Mvc5` as the startup project and pick the
+2. Set `ModelSaver.Mvc5.Sample` as the startup project and pick the
    **IIS Express** profile.
 3. Press F5. It opens `http://localhost:8081/Order/Edit`.
 
 From a shell instead:
 
 ```bash
-dotnet build samples/ModelSaver.Samples.Mvc5
-"C:\Program Files\IIS Express\iisexpress.exe" /path:%CD%\samples\ModelSaver.Samples.Mvc5 /port:8081
+dotnet build samples/ModelSaver.Mvc5.Sample
+"C:\Program Files\IIS Express\iisexpress.exe" /path:%CD%\samples\ModelSaver.Mvc5.Sample /port:8081
 ```
