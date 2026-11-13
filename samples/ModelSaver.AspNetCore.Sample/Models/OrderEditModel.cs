@@ -1,6 +1,6 @@
 using ModelSaver;
 
-namespace ModelSaver.Samples.AspNetCore.Models;
+namespace ModelSaver.AspNetCore.Sample.Models;
 
 [PersistOnPostback]
 public class OrderEditModel

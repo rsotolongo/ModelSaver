@@ -1,7 +1,7 @@
 using System.Web.Mvc;
 using System.Web.Routing;
 
-namespace ModelSaver.Samples.Mvc5;
+namespace ModelSaver.Mvc5.Sample;
 
 public class RouteConfig
 {

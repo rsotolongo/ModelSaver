@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using ModelSaver.Samples.AspNetCore.Models;
+using ModelSaver.AspNetCore.Sample.Models;
 
-namespace ModelSaver.Samples.AspNetCore.Controllers;
+namespace ModelSaver.AspNetCore.Sample.Controllers;
 
 public class OrderController : Controller
 {

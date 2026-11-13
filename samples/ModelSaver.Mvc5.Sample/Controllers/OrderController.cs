@@ -1,8 +1,8 @@
 using System;
 using System.Web.Mvc;
-using ModelSaver.Samples.Mvc5.Models;
+using ModelSaver.Mvc5.Sample.Models;
 
-namespace ModelSaver.Samples.Mvc5.Controllers;
+namespace ModelSaver.Mvc5.Sample.Controllers;
 
 public class OrderController : Controller
 {

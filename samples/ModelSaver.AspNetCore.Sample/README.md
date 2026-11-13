@@ -1,4 +1,4 @@
-# ModelSaver.Samples.AspNetCore
+# ModelSaver.AspNetCore.Sample
 
 A minimal ASP.NET Core MVC app demonstrating `ModelSaver.AspNetCore`.
 
@@ -23,7 +23,7 @@ can see all four hidden fields round-tripped correctly, while
 ## Running it
 
 ```bash
-dotnet run --project samples/ModelSaver.Samples.AspNetCore
+dotnet run --project samples/ModelSaver.AspNetCore.Sample
 ```
 
 Then open the URL it prints (defaults to `http://localhost:5247`).
