@@ -6,8 +6,9 @@
 <h1>Posted-back model</h1>
 
 <p>This is exactly what the <code>Save</code> action received - notice
-   everything round-tripped except <code>DisplayOnlySummary</code>, which
-   was never sent because it's excluded with
+   everything round-tripped, including the nested
+   <code>ShippingAddress</code> and <code>ShippingAddress.Location</code>
+   properties, except the ones excluded with
    <code>[PersistOnPostback(false)]</code>.</p>
 
 <dl>
@@ -25,6 +26,24 @@
 
     <dt>CustomerName</dt>
     <dd>@Model.CustomerName</dd>
+
+    <dt>ShippingAddress.Street</dt>
+    <dd>@Model.ShippingAddress.Street</dd>
+
+    <dt>ShippingAddress.City</dt>
+    <dd>@Model.ShippingAddress.City</dd>
+
+    <dt>ShippingAddress.PostalCode</dt>
+    <dd>"@Model.ShippingAddress.PostalCode"</dd>
+
+    <dt>ShippingAddress.Location.Latitude</dt>
+    <dd>@Model.ShippingAddress.Location.Latitude</dd>
+
+    <dt>ShippingAddress.Location.Longitude</dt>
+    <dd>@Model.ShippingAddress.Location.Longitude</dd>
+
+    <dt>ShippingAddress.DeliveryInstructions (expected to be empty)</dt>
+    <dd>"@Model.ShippingAddress.DeliveryInstructions"</dd>
 
     <dt>DisplayOnlySummary (expected to be empty)</dt>
     <dd>"@Model.DisplayOnlySummary"</dd>

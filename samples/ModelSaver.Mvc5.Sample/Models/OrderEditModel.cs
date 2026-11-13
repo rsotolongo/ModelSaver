@@ -13,6 +13,8 @@ public class OrderEditModel
 
     public string CustomerName { get; set; } = "";
 
+    public ShippingAddress ShippingAddress { get; set; } = new();
+
     [PersistOnPostback(false)]
     public string DisplayOnlySummary { get; set; } = "";
 }
