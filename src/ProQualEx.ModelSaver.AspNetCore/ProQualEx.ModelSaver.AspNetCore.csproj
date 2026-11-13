@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <PackageId>ProQualEx.ModelSaver.AspNetCore</PackageId>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
     <Description>ASP.NET Core Tag Helper adapter for ProQualEx.ModelSaver: automatic hidden-field persistence for &lt;form&gt; elements.</Description>
     <PackageTags>aspnetcore;tag-helper;forms;hidden-fields;model-binding</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
