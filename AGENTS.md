@@ -2,6 +2,8 @@
 
 This file provides guidance to AI coding agents (including Claude Code, OpenAI Codex, OpenCode, and other compatible agents) when working with code in this repository.
 
+It take precedence over the global or profile rules where they conflict.
+
 ## What this is
 
 ProQualEx.ModelSaver removes the boilerplate of manually adding hidden `<input>`
