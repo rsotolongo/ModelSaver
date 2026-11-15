@@ -1,7 +1,8 @@
+artifacts/
 bin/
 obj/
 *.user
-.vs/
+.claude/
 .remember/
-artifacts/
+.vs/
 docs/superpowers/
