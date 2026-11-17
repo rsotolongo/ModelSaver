@@ -2,8 +2,14 @@ using ProQualEx.ModelSaver.Mvc5.Internal;
 
 namespace ProQualEx.ModelSaver.Mvc5.Tests;
 
+/// <summary>
+/// Tests for form html splicer.
+/// </summary>
 public class FormHtmlSplicerTests
 {
+    /// <summary>
+    /// Splice inserts missing hidden fields before closing form tag.
+    /// </summary>
     [Fact]
     public void SpliceInsertsMissingHiddenFieldsBeforeClosingFormTag()
     {
@@ -18,6 +24,9 @@ public class FormHtmlSplicerTests
         Assert.True(hiddenFieldIndex < closingTagIndex);
     }
 
+    /// <summary>
+    /// Splice everything already rendered leaves html unchanged.
+    /// </summary>
     [Fact]
     public void SpliceEverythingAlreadyRenderedLeavesHtmlUnchanged()
     {
@@ -29,6 +38,9 @@ public class FormHtmlSplicerTests
         Assert.Equal(formHtml, result);
     }
 
+    /// <summary>
+    /// Splice no closing form tag appends to end.
+    /// </summary>
     [Fact]
     public void SpliceNoClosingFormTagAppendsToEnd()
     {

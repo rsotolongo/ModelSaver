@@ -20,20 +20,17 @@ public class PersistOnPostbackTagHelper : TagHelper
     /// <inheritdoc />
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
-        if (Model is null)
-        {
-            return;
-        }
+        string hiddenFieldsHtml = Model is null
+            ? string.Empty
+            : await BuildHiddenFieldsHtmlAsync(Model, output).ConfigureAwait(false);
 
+        output.PostContent.AppendHtml(hiddenFieldsHtml);
+    }
+
+    private static async Task<string> BuildHiddenFieldsHtmlAsync(object model, TagHelperOutput output)
+    {
         TagHelperContent content = await output.GetChildContentAsync().ConfigureAwait(false);
-        string renderedHtml = content.GetContent();
-        IReadOnlyList<PersistField> missingFields = HiddenFieldDiffer.GetMissingFields(Model, renderedHtml);
 
-        if (missingFields.Count is 0)
-        {
-            return;
-        }
-
-        output.PostContent.AppendHtml(HiddenFieldRenderer.Render(missingFields));
+        return HiddenFieldRenderer.Render(HiddenFieldDiffer.GetMissingFields(model, content.GetContent()));
     }
 }

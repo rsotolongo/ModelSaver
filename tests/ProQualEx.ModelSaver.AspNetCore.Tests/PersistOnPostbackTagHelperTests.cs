@@ -5,8 +5,14 @@ using ProQualEx.ModelSaver.AspNetCore;
 
 namespace ProQualEx.ModelSaver.AspNetCore.Tests;
 
+/// <summary>
+/// Tests for persist on postback tag helper.
+/// </summary>
 public class PersistOnPostbackTagHelperTests
 {
+    /// <summary>
+    /// Process async appends hidden fields for missing properties.
+    /// </summary>
     [Fact]
     public async Task ProcessAsyncAppendsHiddenFieldsForMissingPropertiesAsync()
     {
@@ -23,6 +29,9 @@ public class PersistOnPostbackTagHelperTests
         Assert.DoesNotContain("name=\"CustomerName\"", rendered, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Process async everything already rendered appends nothing.
+    /// </summary>
     [Fact]
     public async Task ProcessAsyncEverythingAlreadyRenderedAppendsNothingAsync()
     {
@@ -37,6 +46,9 @@ public class PersistOnPostbackTagHelperTests
         Assert.Equal(string.Empty, output.PostContent.GetContent());
     }
 
+    /// <summary>
+    /// Process async null model does nothing.
+    /// </summary>
     [Fact]
     public async Task ProcessAsyncNullModelDoesNothingAsync()
     {

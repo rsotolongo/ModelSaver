@@ -2,8 +2,14 @@ using ProQualEx.ModelSaver.Internal;
 
 namespace ProQualEx.ModelSaver.Core.Tests;
 
+/// <summary>
+/// Tests for eligible path collector.
+/// </summary>
 public class EligiblePathCollectorTests
 {
+    /// <summary>
+    /// Collect flat model returns only eligible scalar properties.
+    /// </summary>
     [Fact]
     public void CollectFlatModelReturnsOnlyEligibleScalarProperties()
     {
@@ -17,6 +23,9 @@ public class EligiblePathCollectorTests
         Assert.DoesNotContain(paths, static p => p.Name is "Ignored");
     }
 
+    /// <summary>
+    /// Collect nested complex property builds dotted path.
+    /// </summary>
     [Fact]
     public void CollectNestedComplexPropertyBuildsDottedPath()
     {
@@ -24,11 +33,15 @@ public class EligiblePathCollectorTests
 
         IReadOnlyList<EligiblePath> paths = EligiblePathCollector.Collect(model);
 
-        Assert.Single(paths);
-        Assert.Equal("Address.City", paths[0].Name);
-        Assert.Equal("Miami", paths[0].Value);
+        EligiblePath path = Assert.Single(paths);
+
+        Assert.Equal("Address.City", path.Name);
+        Assert.Equal("Miami", path.Value);
     }
 
+    /// <summary>
+    /// Collect null nested complex property is skipped entirely.
+    /// </summary>
     [Fact]
     public void CollectNullNestedComplexPropertyIsSkippedEntirely()
     {
@@ -39,6 +52,9 @@ public class EligiblePathCollectorTests
         Assert.Empty(paths);
     }
 
+    /// <summary>
+    /// Collect nested type uses its own attributes not parent default.
+    /// </summary>
     [Fact]
     public void CollectNestedTypeUsesItsOwnAttributesNotParentDefault()
     {

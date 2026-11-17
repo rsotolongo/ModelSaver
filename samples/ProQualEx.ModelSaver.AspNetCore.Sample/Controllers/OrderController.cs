@@ -4,9 +4,15 @@ using ProQualEx.ModelSaver.AspNetCore.Sample.Models;
 
 namespace ProQualEx.ModelSaver.AspNetCore.Sample.Controllers;
 
+/// <summary>
+/// Shows an order for editing and echoes back what the postback received.
+/// </summary>
 [AllowAnonymous]
 public class OrderController : Controller
 {
+    /// <summary>
+    /// Renders the edit form for a sample order.
+    /// </summary>
     [HttpGet]
     public IActionResult Edit()
     {
@@ -33,6 +39,9 @@ public class OrderController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// Receives the posted model and shows every property that round-tripped.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Save(OrderEditModel model)

@@ -2,8 +2,14 @@ using ProQualEx.ModelSaver.Internal;
 
 namespace ProQualEx.ModelSaver.Core.Tests;
 
+/// <summary>
+/// Tests for rendered name scanner.
+/// </summary>
 public class RenderedNameScannerTests
 {
+    /// <summary>
+    /// Extract names double quoted input is extracted.
+    /// </summary>
     [Fact]
     public void ExtractNamesDoubleQuotedInputIsExtracted()
     {
@@ -14,6 +20,9 @@ public class RenderedNameScannerTests
         Assert.Contains("Name", names);
     }
 
+    /// <summary>
+    /// Extract names single quoted input is extracted.
+    /// </summary>
     [Fact]
     public void ExtractNamesSingleQuotedInputIsExtracted()
     {
@@ -24,6 +33,9 @@ public class RenderedNameScannerTests
         Assert.Contains("Name", names);
     }
 
+    /// <summary>
+    /// Extract names select and textarea are extracted.
+    /// </summary>
     [Fact]
     public void ExtractNamesSelectAndTextareaAreExtracted()
     {
@@ -35,6 +47,9 @@ public class RenderedNameScannerTests
         Assert.Contains("Bio", names);
     }
 
+    /// <summary>
+    /// Extract names excludes non data input types.
+    /// </summary>
     [Theory]
     [InlineData("submit")]
     [InlineData("button")]
@@ -49,6 +64,9 @@ public class RenderedNameScannerTests
         Assert.DoesNotContain("Save", names);
     }
 
+    /// <summary>
+    /// Extract names non self closing input tag is extracted.
+    /// </summary>
     [Fact]
     public void ExtractNamesNonSelfClosingInputTagIsExtracted()
     {
@@ -59,6 +77,9 @@ public class RenderedNameScannerTests
         Assert.Contains("Name", names);
     }
 
+    /// <summary>
+    /// Extract names multiple elements returns all names.
+    /// </summary>
     [Fact]
     public void ExtractNamesMultipleElementsReturnsAllNames()
     {

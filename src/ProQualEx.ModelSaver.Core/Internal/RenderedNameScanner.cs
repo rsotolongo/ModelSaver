@@ -16,13 +16,14 @@ internal static class RenderedNameScanner
         RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture,
         MatchTimeout);
 
-    private static readonly HashSet<string> ExcludedInputTypes = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> ExcludedInputTypes =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "submit",
         "button",
         "reset",
         "image",
-    };
+    ];
 
     internal static HashSet<string> ExtractNames(string html)
     {

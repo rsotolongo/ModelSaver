@@ -2,8 +2,14 @@ using System.Reflection;
 
 namespace ProQualEx.ModelSaver.Core.Tests;
 
+/// <summary>
+/// Tests for hidden field differ.
+/// </summary>
 public class HiddenFieldDifferTests
 {
+    /// <summary>
+    /// Get missing fields property already rendered is excluded.
+    /// </summary>
     [Fact]
     public void GetMissingFieldsPropertyAlreadyRenderedIsExcluded()
     {
@@ -12,11 +18,15 @@ public class HiddenFieldDifferTests
 
         IReadOnlyList<PersistField> missing = HiddenFieldDiffer.GetMissingFields(model, renderedHtml);
 
-        Assert.Single(missing);
-        Assert.Equal("Id", missing[0].Name);
-        Assert.Equal("42", missing[0].Value);
+        PersistField field = Assert.Single(missing);
+
+        Assert.Equal("Id", field.Name);
+        Assert.Equal("42", field.Value);
     }
 
+    /// <summary>
+    /// Get missing fields nothing rendered returns all eligible fields.
+    /// </summary>
     [Fact]
     public void GetMissingFieldsNothingRenderedReturnsAllEligibleFields()
     {
@@ -27,6 +37,9 @@ public class HiddenFieldDifferTests
         Assert.Equal(2, missing.Count);
     }
 
+    /// <summary>
+    /// Get missing fields everything rendered returns empty.
+    /// </summary>
     [Fact]
     public void GetMissingFieldsEverythingRenderedReturnsEmpty()
     {
@@ -38,6 +51,9 @@ public class HiddenFieldDifferTests
         Assert.Empty(missing);
     }
 
+    /// <summary>
+    /// Get missing fields nested property uses dotted name for diff.
+    /// </summary>
     [Fact]
     public void GetMissingFieldsNestedPropertyUsesDottedNameForDiff()
     {
@@ -49,6 +65,9 @@ public class HiddenFieldDifferTests
         Assert.Empty(missing);
     }
 
+    /// <summary>
+    /// Get missing fields null model throws.
+    /// </summary>
     [Fact]
     public void GetMissingFieldsNullModelThrows()
     {

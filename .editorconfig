@@ -4,6 +4,7 @@
 root = true
 
 [*]
+charset = utf-8
 indent_size = 2
 indent_style = space
 
@@ -14,7 +15,7 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 
 # ---------------------------------------------------------------------------
-# Style options (target: .NET 10 / C# 14)
+# Style options (target: .NET 11 / C# 15)
 # ---------------------------------------------------------------------------
 csharp_style_namespace_declarations = file_scoped:error
 csharp_using_directive_placement = outside_namespace:error
@@ -72,7 +73,7 @@ dotnet_naming_style.pascal.capitalization = pascal_case
 dotnet_naming_style.underscore_camel.required_prefix = _
 dotnet_naming_style.underscore_camel.capitalization = camel_case
 
-# Rules from assembly: Microsoft.CodeAnalysis.CSharp, Version=5.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35
+# Rules from assembly: Microsoft.CodeAnalysis.CSharp, Version=5.12.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35
 
 # AD0001: Analyzer Failure
 dotnet_diagnostic.AD0001.severity = error
@@ -2752,9 +2753,6 @@ dotnet_diagnostic.CS4001.severity = error
 
 # CS4003:
 dotnet_diagnostic.CS4003.severity = error
-
-# CS4004:
-dotnet_diagnostic.CS4004.severity = error
 
 # CS4005:
 dotnet_diagnostic.CS4005.severity = error
@@ -5747,9 +5745,6 @@ dotnet_diagnostic.CS9333.severity = error
 # CS9334:
 dotnet_diagnostic.CS9334.severity = error
 
-# CS9335: The pattern is redundant.
-dotnet_diagnostic.CS9335.severity = error
-
 # CS9336: The pattern is redundant.
 dotnet_diagnostic.CS9336.severity = error
 
@@ -5864,7 +5859,7 @@ dotnet_diagnostic.CS9375.severity = error
 # CS9376:
 dotnet_diagnostic.CS9376.severity = error
 
-# CS9377: The 'unsafe' modifier does not have any effect here under the current memory safety rules.
+# CS9377:
 dotnet_diagnostic.CS9377.severity = error
 
 # CS9378:
@@ -5915,7 +5910,25 @@ dotnet_diagnostic.CS9393.severity = error
 # CS9394:
 dotnet_diagnostic.CS9394.severity = error
 
-# Rules from assembly: Meziantou.Analyzer, Version=3.0.317.0, Culture=neutral, PublicKeyToken=null
+# CS9395:
+dotnet_diagnostic.CS9395.severity = error
+
+# CS9396:
+dotnet_diagnostic.CS9396.severity = error
+
+# CS9397:
+dotnet_diagnostic.CS9397.severity = error
+
+# CS9398:
+dotnet_diagnostic.CS9398.severity = error
+
+# CS9399:
+dotnet_diagnostic.CS9399.severity = error
+
+# CS9400:
+dotnet_diagnostic.CS9400.severity = error
+
+# Rules from assembly: Meziantou.Analyzer, Version=3.0.341.0, Culture=neutral, PublicKeyToken=null
 
 # MA0001: StringComparison is missing
 dotnet_diagnostic.MA0001.severity = error
@@ -6548,7 +6561,7 @@ dotnet_diagnostic.MA0211.severity = error
 dotnet_diagnostic.MA0213.severity = error
 
 # MA0214: Use 'await' instead of returning the task
-dotnet_diagnostic.MA0214.severity = none
+dotnet_diagnostic.MA0214.severity = error
 
 # MA0215: Return the task instead of awaiting it
 dotnet_diagnostic.MA0215.severity = error
@@ -6634,7 +6647,13 @@ dotnet_diagnostic.MA0242.severity = error
 # MA0243: Use an escape sequence for invisible characters
 dotnet_diagnostic.MA0243.severity = error
 
-# Rules from assembly: Microsoft.CodeAnalysis.CodeStyle, Version=5.9.14.35703, Culture=neutral, PublicKeyToken=31bf3856ad364e35
+# MA0244: Use a decimal literal instead of converting a floating-point constant to decimal
+dotnet_diagnostic.MA0244.severity = error
+
+# MA0245: Review the conversion of a floating-point value to decimal
+dotnet_diagnostic.MA0245.severity = error
+
+# Rules from assembly: Microsoft.CodeAnalysis.CodeStyle, Version=5.12.15.202, Culture=neutral, PublicKeyToken=31bf3856ad364e35
 
 # IDE0033: Use explicitly provided tuple name
 dotnet_diagnostic.IDE0033.severity = error
@@ -6642,7 +6661,7 @@ dotnet_diagnostic.IDE0033.severity = error
 # IDE0070: Use 'System.HashCode'
 dotnet_diagnostic.IDE0070.severity = error
 
-# Rules from assembly: Microsoft.CodeAnalysis.CSharp.CodeStyle, Version=5.9.14.35703, Culture=neutral, PublicKeyToken=31bf3856ad364e35
+# Rules from assembly: Microsoft.CodeAnalysis.CSharp.CodeStyle, Version=5.12.15.202, Culture=neutral, PublicKeyToken=31bf3856ad364e35
 
 # EnableGenerateDocumentationFile: Set MSBuild property 'GenerateDocumentationFile' to 'true'
 dotnet_diagnostic.EnableGenerateDocumentationFile.severity = error
@@ -7004,7 +7023,7 @@ dotnet_diagnostic.IDE2006.severity = error
 # RemoveUnnecessaryImportsFixable:
 dotnet_diagnostic.RemoveUnnecessaryImportsFixable.severity = none
 
-# Rules from assembly: Microsoft.CodeAnalysis.CSharp.NetAnalyzers, Version=10.0.403.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35
+# Rules from assembly: Microsoft.CodeAnalysis.CSharp.NetAnalyzers, Version=11.0.100.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35
 
 # CA1032: Implement standard exception constructors
 dotnet_diagnostic.CA1032.severity = error
@@ -7099,6 +7118,9 @@ dotnet_diagnostic.CA2263.severity = error
 # CA2266: File-based program entry point should start with '#!'
 dotnet_diagnostic.CA2266.severity = error
 
+# CA2267: Quote whitespace in file-based program directive values
+dotnet_diagnostic.CA2267.severity = error
+
 # CA2352: Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks
 dotnet_diagnostic.CA2352.severity = error
 
@@ -7117,7 +7139,7 @@ dotnet_diagnostic.CA2356.severity = error
 # CA2362: Unsafe DataSet or DataTable in auto-generated serializable type can be vulnerable to remote code execution attacks
 dotnet_diagnostic.CA2362.severity = error
 
-# Rules from assembly: Microsoft.CodeAnalysis.NetAnalyzers, Version=10.0.403.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35
+# Rules from assembly: Microsoft.CodeAnalysis.NetAnalyzers, Version=11.0.100.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35
 
 # CA1000: Do not declare static members on generic types
 dotnet_diagnostic.CA1000.severity = none
@@ -7332,6 +7354,9 @@ dotnet_diagnostic.CA1513.severity = error
 # CA1514: Avoid redundant length argument
 dotnet_diagnostic.CA1514.severity = error
 
+# CA1517: Use 'ReadOnlySpan<T>' or 'ReadOnlyMemory<T>' instead of 'Span<T>' or 'Memory<T>'
+dotnet_diagnostic.CA1517.severity = error
+
 # CA1700: Do not name enum values 'Reserved'
 dotnet_diagnostic.CA1700.severity = error
 
@@ -7527,6 +7552,12 @@ dotnet_diagnostic.CA1874.severity = error
 # CA1875: Use 'Regex.Count'
 dotnet_diagnostic.CA1875.severity = error
 
+# CA1876: Do not use 'AsParallel' in 'foreach'
+dotnet_diagnostic.CA1876.severity = error
+
+# CA1877: Collapse consecutive Path.Combine or Path.Join operations
+dotnet_diagnostic.CA1877.severity = error
+
 # CA2000: Dispose objects before losing scope
 dotnet_diagnostic.CA2000.severity = none
 
@@ -7577,6 +7608,15 @@ dotnet_diagnostic.CA2024.severity = error
 
 # CA2025: Do not pass 'IDisposable' instances into unawaited tasks
 dotnet_diagnostic.CA2025.severity = error
+
+# CA2026: Prefer JsonElement.Parse over JsonDocument.Parse().RootElement
+dotnet_diagnostic.CA2026.severity = error
+
+# CA2027: Cancel Task.Delay after Task.WhenAny completes
+dotnet_diagnostic.CA2027.severity = error
+
+# CA2028: Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'
+dotnet_diagnostic.CA2028.severity = error
 
 # CA2100: Review SQL queries for security vulnerabilities
 dotnet_diagnostic.CA2100.severity = error
@@ -7962,11 +8002,6 @@ dotnet_diagnostic.CA5404.severity = error
 # CA5405: Do not always skip token validation in delegates
 dotnet_diagnostic.CA5405.severity = error
 
-# Rules from assembly: Microsoft.CodeAnalysis.Workspaces, Version=5.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35
-
-# IDE1100: Workspace error
-dotnet_diagnostic.IDE1100.severity = none
-
 # Rules from assembly: Roslynator.CSharp.Analyzers, Version=5.0.1.0, Culture=neutral, PublicKeyToken=926ea54d246a765e
 
 # RCS1001: Add braces (when expression spans over multiple lines)
@@ -8033,7 +8068,7 @@ dotnet_diagnostic.RCS1021.severity = error
 dotnet_diagnostic.RCS1021FadeOut.severity = none
 
 # RCS1031: Remove unnecessary braces in switch section
-dotnet_diagnostic.RCS1031.severity = error
+dotnet_diagnostic.RCS1031.severity = none
 
 # RCS1031FadeOut: Remove unnecessary braces in switch section
 dotnet_diagnostic.RCS1031FadeOut.severity = none
@@ -8477,7 +8512,7 @@ dotnet_diagnostic.RCS1215.severity = error
 dotnet_diagnostic.RCS1216.severity = error
 
 # RCS1217: Convert interpolated string to concatenation
-dotnet_diagnostic.RCS1217.severity = error
+dotnet_diagnostic.RCS1217.severity = none
 
 # RCS1217FadeOut: Convert interpolated string to concatenation
 dotnet_diagnostic.RCS1217FadeOut.severity = none
@@ -8740,7 +8775,7 @@ dotnet_diagnostic.SCS0033.severity = none
 # SCS0034: The {0} property must be set.
 dotnet_diagnostic.SCS0034.severity = none
 
-# Rules from assembly: SonarAnalyzer.CSharp, Version=10.35.0.0, Culture=neutral, PublicKeyToken=null
+# Rules from assembly: SonarAnalyzer.CSharp, Version=10.36.0.0, Culture=neutral, PublicKeyToken=null
 
 # S100: Methods and properties should be named in PascalCase
 dotnet_diagnostic.S100.severity = none
@@ -9283,7 +9318,7 @@ dotnet_diagnostic.S3011.severity = error
 dotnet_diagnostic.S3052.severity = error
 
 # S3059: Types should not have members with visibility set higher than the type's visibility
-dotnet_diagnostic.S3059.severity = error
+dotnet_diagnostic.S3059.severity = none
 
 # S3060: "is" should not be used with "this"
 dotnet_diagnostic.S3060.severity = error
@@ -10110,6 +10145,15 @@ dotnet_diagnostic.S907.severity = error
 # S927: Parameter names should match base declaration and other partial definitions
 dotnet_diagnostic.S927.severity = error
 
+# S9414: Local variable declarations and assignments should be joined
+dotnet_diagnostic.S9414.severity = error
+
+# S9415: Local functions should be marked "static" when they don't capture variables
+dotnet_diagnostic.S9415.severity = error
+
+# S9422: Lock object fields should use "System.Threading.Lock" type
+dotnet_diagnostic.S9422.severity = error
+
 # S9999-cpd: Copy-paste token calculator
 dotnet_diagnostic.S9999-cpd.severity = none
 
@@ -10137,7 +10181,7 @@ dotnet_diagnostic.S9999-token-type.severity = none
 # S9999-warning: Analysis Warning generator
 dotnet_diagnostic.S9999-warning.severity = none
 
-# Rules from assembly: StyleCop.Analyzers, Version=1.1.118.34620, Culture=neutral, PublicKeyToken=cfeb5dbada5e1c25
+# Rules from assembly: StyleCop.Analyzers, Version=1.3.180.65480, Culture=neutral, PublicKeyToken=cfeb5dbada5e1c25
 
 # SA0001: XML comment analysis disabled
 dotnet_diagnostic.SA0001.severity = error
@@ -10352,6 +10396,15 @@ dotnet_diagnostic.SA1137.severity = error
 # SA1139: Use literal suffix notation instead of casting
 dotnet_diagnostic.SA1139.severity = error
 
+# SA1141: Use tuple syntax
+dotnet_diagnostic.SA1141.severity = error
+
+# SA1142: Refer to tuple fields by name
+dotnet_diagnostic.SA1142.severity = error
+
+# SA1143: Conditional expressions must be formatted consistently
+dotnet_diagnostic.SA1143.severity = error
+
 # SA1200: Using directives should be placed correctly
 dotnet_diagnostic.SA1200.severity = none
 
@@ -10397,7 +10450,7 @@ dotnet_diagnostic.SA1213.severity = error
 # SA1214: Readonly fields should appear before non-readonly fields
 dotnet_diagnostic.SA1214.severity = error
 
-# SA1216: Using static directives should be placed at the correct location.
+# SA1216: Using static directives should be placed at the correct location
 dotnet_diagnostic.SA1216.severity = error
 
 # SA1217: Using static directives should be ordered alphabetically
@@ -10418,7 +10471,7 @@ dotnet_diagnostic.SA1303.severity = none
 # SA1304: Non-private readonly fields should begin with upper-case letter
 dotnet_diagnostic.SA1304.severity = none
 
-# SA1305: Field names should not use Hungarian notation
+# SA1305: Names should not use Hungarian notation
 dotnet_diagnostic.SA1305.severity = none
 
 # SA1306: Field names should begin with lower-case letter
@@ -10448,6 +10501,15 @@ dotnet_diagnostic.SA1313.severity = none
 # SA1314: Type parameter names should begin with T
 dotnet_diagnostic.SA1314.severity = error
 
+# SA1315: Parameter names should match inherited names
+dotnet_diagnostic.SA1315.severity = error
+
+# SA1316: Tuple element names should use correct casing
+dotnet_diagnostic.SA1316.severity = error
+
+# SA1317: Identifier should be named only with Latin letters
+dotnet_diagnostic.SA1317.severity = error
+
 # SA1400: Access modifier should be declared
 dotnet_diagnostic.SA1400.severity = error
 
@@ -10469,7 +10531,7 @@ dotnet_diagnostic.SA1405.severity = error
 # SA1406: Debug.Fail should provide message text
 dotnet_diagnostic.SA1406.severity = error
 
-# SA1407: Arithmetic expressions should declare precedence
+# SA1407: Arithmetic, bitwise, and shift expressions should declare precedence
 dotnet_diagnostic.SA1407.severity = error
 
 # SA1408: Conditional expressions should declare precedence
@@ -10487,8 +10549,11 @@ dotnet_diagnostic.SA1411.severity = error
 # SA1412: Store files as UTF-8 with byte order mark
 dotnet_diagnostic.SA1412.severity = none
 
-# SA1413: Use trailing comma in multi-line initializers
+# SA1413: Use trailing comma in multi-line initializers and lists
 dotnet_diagnostic.SA1413.severity = error
+
+# SA1414: Tuple types in signatures should have element names
+dotnet_diagnostic.SA1414.severity = error
 
 # SA1500: Braces for multi-line statements should not share line
 dotnet_diagnostic.SA1500.severity = none
@@ -10628,7 +10693,7 @@ dotnet_diagnostic.SA1623.severity = none
 # SA1624: Property summary documentation should omit accessor with restricted access
 dotnet_diagnostic.SA1624.severity = none
 
-# SA1625: Element documentation should not be copied and pasted
+# SA1625: Element documentation should not contain duplicate entries
 dotnet_diagnostic.SA1625.severity = none
 
 # SA1626: Single-line comments should not use documentation style slashes
@@ -10709,6 +10774,12 @@ dotnet_diagnostic.SA1650.severity = none
 # SA1651: Do not use placeholder elements
 dotnet_diagnostic.SA1651.severity = none
 
+# SA1653: Only one partial declaration should contain summary documentation
+dotnet_diagnostic.SA1653.severity = error
+
+# SA1654: Properly encode generic brackets
+dotnet_diagnostic.SA1654.severity = error
+
 # SX1101: Do not prefix local calls with 'this.'
 dotnet_diagnostic.SX1101.severity = none
 
@@ -10717,6 +10788,9 @@ dotnet_diagnostic.SX1309.severity = error
 
 # SX1309S: Static field names should begin with underscore
 dotnet_diagnostic.SX1309S.severity = none
+
+# SX1412: Store files as UTF-8 without byte order mark
+dotnet_diagnostic.SX1412.severity = error
 
 # ---------------------------------------------------------------------------
 # Generated code (obj/bin, source generators): CS* compiler diagnostics still fire here
@@ -10727,6 +10801,14 @@ generated_code = true
 dotnet_diagnostic.CS8933.severity = none
 dotnet_diagnostic.CS1591.severity = none
 
-[**/Abstractions/Messaging/IQuery.cs]
-dotnet_diagnostic.S2326.severity = none
-dotnet_diagnostic.SA1106.severity = none
+# ---------------------------------------------------------------------------
+# ASP.NET Core only discovers public controllers, so CA1515 cannot be satisfied for them
+# ---------------------------------------------------------------------------
+[**/*Controller.cs]
+dotnet_diagnostic.CA1515.severity = none
+
+# ---------------------------------------------------------------------------
+# MVC action parameters must be public, so models bound by public controllers cannot be internal
+# ---------------------------------------------------------------------------
+[samples/**/Models/*.cs]
+dotnet_diagnostic.CA1515.severity = none

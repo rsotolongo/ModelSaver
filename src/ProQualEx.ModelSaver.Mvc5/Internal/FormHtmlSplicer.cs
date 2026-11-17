@@ -6,16 +6,17 @@ internal static class FormHtmlSplicer
     {
         IReadOnlyList<PersistField> missingFields = HiddenFieldDiffer.GetMissingFields(model, formHtml);
         string hiddenFieldsHtml = HiddenFieldRenderer.Render(missingFields);
+        string result = formHtml;
 
-        if (hiddenFieldsHtml.Length is 0)
+        if (hiddenFieldsHtml.Length > 0)
         {
-            return formHtml;
+            int closingTagIndex = formHtml.LastIndexOf("</form>", StringComparison.OrdinalIgnoreCase);
+
+            result = closingTagIndex < 0
+                ? formHtml + hiddenFieldsHtml
+                : formHtml.Insert(closingTagIndex, hiddenFieldsHtml);
         }
 
-        int closingTagIndex = formHtml.LastIndexOf("</form>", StringComparison.OrdinalIgnoreCase);
-
-        return closingTagIndex < 0
-            ? formHtml + hiddenFieldsHtml
-            : formHtml.Insert(closingTagIndex, hiddenFieldsHtml);
+        return result;
     }
 }

@@ -11,13 +11,10 @@ internal static class PersistenceResolver
             throw new ArgumentNullException(nameof(property));
         }
 
-        PersistOnPostbackAttribute? propertyAttribute = property.GetCustomAttribute<PersistOnPostbackAttribute>(inherit: true);
-        if (propertyAttribute is not null)
-        {
-            return propertyAttribute.Persist;
-        }
+        PersistOnPostbackAttribute? effective =
+            property.GetCustomAttribute<PersistOnPostbackAttribute>(inherit: true)
+            ?? property.DeclaringType?.GetCustomAttribute<PersistOnPostbackAttribute>(inherit: true);
 
-        PersistOnPostbackAttribute? classAttribute = property.DeclaringType?.GetCustomAttribute<PersistOnPostbackAttribute>(inherit: true);
-        return classAttribute?.Persist ?? false;
+        return effective?.Persist ?? false;
     }
 }
